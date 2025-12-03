@@ -194,12 +194,12 @@ function App() {
                   <h2 className="text-2xl font-extrabold text-gray-800 mb-6 text-center mt-2">Quiz auswählen</h2>
                   
                   <div className="mb-6">
-                    <label className="block text-gray-800 font-bold mb-3 text-center">Kategorie</label>
-                    <div className="flex flex-col gap-3">
+                    {/* Label removed as requested */}
+                    <div className="flex flex-col gap-2">
                       {/* Hundeführerschein Button */}
                       <button
                         onClick={() => setQuizConfig({...quizConfig, category: 'Hundeführerschein'})}
-                        className={`py-4 px-6 rounded-2xl border-b-4 font-bold text-lg transition-all ${
+                        className={`py-3 px-6 rounded-2xl border-b-4 font-bold text-lg transition-all ${
                           quizConfig.category === 'Hundeführerschein'
                             ? 'bg-[#FF9F43] border-[#e67e22] text-white translate-y-[2px] border-b-0 mb-[4px]' 
                             : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200'
@@ -211,7 +211,7 @@ function App() {
                       {/* Trainerprüfung Button */}
                       <button
                         onClick={() => setQuizConfig({...quizConfig, category: 'Trainerprüfung'})}
-                        className={`py-4 px-6 rounded-2xl border-b-4 font-bold text-lg transition-all ${
+                        className={`py-3 px-6 rounded-2xl border-b-4 font-bold text-lg transition-all ${
                           quizConfig.category === 'Trainerprüfung'
                             ? 'bg-[#6C5CE7] border-[#4834d4] text-white translate-y-[2px] border-b-0 mb-[4px]' 
                             : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200'
@@ -224,12 +224,12 @@ function App() {
 
                   <div className="mb-8">
                     <label className="block text-gray-800 font-bold mb-3 text-center">Anzahl Fragen</label>
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 gap-2">
                       {[5, 10, 20, 60].map(count => (
                         <button
                           key={count}
                           onClick={() => setQuizConfig({...quizConfig, count})}
-                          className={`py-3 rounded-xl border-2 font-bold transition-all ${
+                          className={`py-2 rounded-xl border-2 font-bold transition-all ${
                             quizConfig.count === count
                               ? `${activeThemeClass} text-white shadow-lg`
                               : 'border-transparent bg-gray-100 text-gray-400 hover:bg-gray-200'
