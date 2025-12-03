@@ -140,7 +140,7 @@ const QuizGame: React.FC<QuizGameProps> = ({ questions, onFinish, onExit, timeLi
                         <button 
                             key={idx}
                             onClick={() => handleOptionToggle(option)}
-                            className={`w-full text-left p-3 md:p-4 rounded-xl border-2 font-bold text-xs md:text-sm transition-all transform active:scale-[0.99] flex items-center justify-between group leading-tight shrink-0 ${
+                            className={`w-full text-left p-3 md:p-4 rounded-xl border-2 font-bold text-sm md:text-base transition-all transform active:scale-[0.99] flex items-center justify-between group leading-tight shrink-0 ${
                                 isSelected 
                                     ? 'bg-[#FF9F43] border-[#FF9F43] text-white shadow-md' 
                                     : 'bg-white border-gray-200 text-gray-600 hover:border-[#8c7ae6] hover:bg-purple-50'
