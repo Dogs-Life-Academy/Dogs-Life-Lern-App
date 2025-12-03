@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Question, UserAnswers } from '../types';
+import { Question, UserAnswers } from '../types.ts';
 
 interface QuizGameProps {
   questions: Question[];

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Question, UserAnswers } from '../types';
+import { Question, UserAnswers } from '../types.ts';
 
 interface QuizResultProps {
   questions: Question[];

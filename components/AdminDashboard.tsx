@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchQuestions, deleteQuestion, upsertQuestion, bulkInsertQuestions } from '../services/supabaseClient';
-import { Question, QuestionType, CsvRow } from '../types';
+import { fetchQuestions, deleteQuestion, upsertQuestion, bulkInsertQuestions } from '../services/supabaseClient.ts';
+import { Question, QuestionType, CsvRow } from '../types.ts';
 
 interface AdminDashboardProps {
   onBack: () => void;

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, UserRole, QuizConfig, Question, UserAnswers } from './types';
-import { fetchQuizQuestions } from './services/supabaseClient';
-import AdminDashboard from './components/AdminDashboard';
-import QuizGame from './components/QuizGame';
-import QuizResult from './components/QuizResult';
+import { View, UserRole, QuizConfig, Question, UserAnswers } from './types.ts';
+import { fetchQuizQuestions } from './services/supabaseClient.ts';
+import AdminDashboard from './components/AdminDashboard.tsx';
+import QuizGame from './components/QuizGame.tsx';
+import QuizResult from './components/QuizResult.tsx';
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('START');
@@ -11,7 +11,7 @@ function App() {
   const [adminPassword, setAdminPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
   
-  // Changed default count to 5 as requested
+  // Default count 5
   const [quizConfig, setQuizConfig] = useState<QuizConfig>({ category: 'Hundeführerschein', count: 5 });
   const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
@@ -53,7 +53,7 @@ function App() {
     try {
       const questions = await fetchQuizQuestions(quizConfig.category, quizConfig.count);
       if (questions.length === 0) {
-        alert("No questions found for this category.");
+        alert("Keine Fragen für diese Kategorie gefunden.");
         setLoading(false);
         return;
       } 
@@ -71,7 +71,7 @@ function App() {
 
     } catch (err) {
       console.error(err);
-      alert("Error starting quiz.");
+      alert("Fehler beim Starten des Tests.");
       setLoading(false);
     }
   };
@@ -257,7 +257,9 @@ function App() {
             {/* INTRO MODAL FOR TRAINERPRÜFUNG 60 */}
             {showIntroModal && (
               <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
+                 {/* Flex container for centering - min-h-full ensures vertical scrolling works on mobile */}
                 <div className="flex min-h-full items-center justify-center p-4">
+                  {/* Modal Content */}
                   <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200 my-8">
                     <div className="p-8">
                       <div className="flex justify-center mb-6">
@@ -311,9 +313,7 @@ function App() {
         );
 
       case 'GAME':
-        // Time limit applies to ANY 60 question quiz
-        const timeLimit = quizConfig.count === 60 ? 5400 : 0; // 90 mins * 60s
-        
+        const timeLimit = quizConfig.count === 60 ? 5400 : 0;
         return (
           <QuizGame 
             questions={quizQuestions} 
