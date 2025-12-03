@@ -183,74 +183,77 @@ function App() {
         
         return (
           <>
-            <div className={`min-h-screen ${isTrainer ? 'bg-[#6C5CE7]' : 'bg-[#FF9F43]'} transition-colors duration-500 flex items-center justify-center p-4`}>
-              <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full relative">
-                <button onClick={goHome} className="absolute top-6 left-6 text-gray-400 hover:text-gray-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 19l-7-7 7-7"></path></svg>
-                </button>
-                
-                <h2 className="text-2xl font-extrabold text-gray-800 mb-6 text-center mt-2">Quiz auswählen</h2>
-                
-                <div className="mb-6">
-                  <label className="block text-gray-800 font-bold mb-3 text-center">Kategorie</label>
-                  <div className="flex flex-col gap-3">
-                    {/* Hundeführerschein Button */}
-                    <button
-                      onClick={() => setQuizConfig({...quizConfig, category: 'Hundeführerschein'})}
-                      className={`py-4 px-6 rounded-2xl border-b-4 font-bold text-lg transition-all ${
-                        quizConfig.category === 'Hundeführerschein'
-                          ? 'bg-[#FF9F43] border-[#e67e22] text-white translate-y-[2px] border-b-0 mb-[4px]' 
-                          : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      Hundeführerschein
-                    </button>
-                    
-                    {/* Trainerprüfung Button */}
-                    <button
-                      onClick={() => setQuizConfig({...quizConfig, category: 'Trainerprüfung'})}
-                      className={`py-4 px-6 rounded-2xl border-b-4 font-bold text-lg transition-all ${
-                        quizConfig.category === 'Trainerprüfung'
-                          ? 'bg-[#6C5CE7] border-[#4834d4] text-white translate-y-[2px] border-b-0 mb-[4px]' 
-                          : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      Trainerprüfung
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mb-8">
-                  <label className="block text-gray-800 font-bold mb-3 text-center">Anzahl Fragen</label>
-                  <div className="grid grid-cols-1 gap-3">
-                    {[5, 10, 20, 60].map(count => (
+            {/* Scrollable Container for Selection View */}
+            <div className={`h-full w-full overflow-y-auto scrollbar-hide ${isTrainer ? 'bg-[#6C5CE7]' : 'bg-[#FF9F43]'} transition-colors duration-500`}>
+              <div className="min-h-full w-full flex items-center justify-center p-4">
+                <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full relative">
+                  <button onClick={goHome} className="absolute top-6 left-6 text-gray-400 hover:text-gray-600">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 19l-7-7 7-7"></path></svg>
+                  </button>
+                  
+                  <h2 className="text-2xl font-extrabold text-gray-800 mb-6 text-center mt-2">Quiz auswählen</h2>
+                  
+                  <div className="mb-6">
+                    <label className="block text-gray-800 font-bold mb-3 text-center">Kategorie</label>
+                    <div className="flex flex-col gap-3">
+                      {/* Hundeführerschein Button */}
                       <button
-                        key={count}
-                        onClick={() => setQuizConfig({...quizConfig, count})}
-                        className={`py-3 rounded-xl border-2 font-bold transition-all ${
-                          quizConfig.count === count
-                            ? `${activeThemeClass} text-white shadow-lg`
-                            : 'border-transparent bg-gray-100 text-gray-400 hover:bg-gray-200'
+                        onClick={() => setQuizConfig({...quizConfig, category: 'Hundeführerschein'})}
+                        className={`py-4 px-6 rounded-2xl border-b-4 font-bold text-lg transition-all ${
+                          quizConfig.category === 'Hundeführerschein'
+                            ? 'bg-[#FF9F43] border-[#e67e22] text-white translate-y-[2px] border-b-0 mb-[4px]' 
+                            : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200'
                         }`}
                       >
-                        {count} Fragen
+                        Hundeführerschein
                       </button>
-                    ))}
+                      
+                      {/* Trainerprüfung Button */}
+                      <button
+                        onClick={() => setQuizConfig({...quizConfig, category: 'Trainerprüfung'})}
+                        className={`py-4 px-6 rounded-2xl border-b-4 font-bold text-lg transition-all ${
+                          quizConfig.category === 'Trainerprüfung'
+                            ? 'bg-[#6C5CE7] border-[#4834d4] text-white translate-y-[2px] border-b-0 mb-[4px]' 
+                            : 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        Trainerprüfung
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <button 
-                  onClick={startQuizProcess}
-                  disabled={loading}
-                  className={`w-full py-4 rounded-xl font-extrabold text-xl ${isTrainer ? 'bg-[#6C5CE7]' : 'bg-[#FF9F43]'} text-white ${activeShadowClass} ${hoverClass} active:shadow-none active:translate-y-[4px] transition-all flex justify-center items-center`}
-                >
-                  {loading ? (
-                    <svg className="animate-spin h-6 w-6 text-white" viewBox="0 0 24 24">
-                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                  ) : 'Quiz starten'}
-                </button>
+                  <div className="mb-8">
+                    <label className="block text-gray-800 font-bold mb-3 text-center">Anzahl Fragen</label>
+                    <div className="grid grid-cols-1 gap-3">
+                      {[5, 10, 20, 60].map(count => (
+                        <button
+                          key={count}
+                          onClick={() => setQuizConfig({...quizConfig, count})}
+                          className={`py-3 rounded-xl border-2 font-bold transition-all ${
+                            quizConfig.count === count
+                              ? `${activeThemeClass} text-white shadow-lg`
+                              : 'border-transparent bg-gray-100 text-gray-400 hover:bg-gray-200'
+                          }`}
+                        >
+                          {count} Fragen
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={startQuizProcess}
+                    disabled={loading}
+                    className={`w-full py-4 rounded-xl font-extrabold text-xl ${isTrainer ? 'bg-[#6C5CE7]' : 'bg-[#FF9F43]'} text-white ${activeShadowClass} ${hoverClass} active:shadow-none active:translate-y-[4px] transition-all flex justify-center items-center`}
+                  >
+                    {loading ? (
+                      <svg className="animate-spin h-6 w-6 text-white" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      </svg>
+                    ) : 'Quiz starten'}
+                  </button>
+                </div>
               </div>
             </div>
 
