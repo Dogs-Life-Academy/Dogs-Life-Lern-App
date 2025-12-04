@@ -1,15 +1,15 @@
 const CACHE_NAME = 'dogs-life-v1';
+// Only cache the main entry point and manifest. 
+// Removed .tsx files from cache list as they cause 404 errors in some environments.
 const urlsToCache = [
   './',
   './index.html',
-  './index.tsx',
-  './App.tsx',
-  './types.ts',
   './manifest.json'
 ];
 
 // Install SW
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Force activation
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -44,6 +44,6 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
