@@ -122,14 +122,16 @@ const QuizGame: React.FC<QuizGameProps> = ({ questions, onFinish, onExit, timeLi
         {/* Inner Container - Flex Column to distribute space */}
         <div id="quiz-content-area" className="flex-1 flex flex-col p-4 overflow-y-auto scrollbar-hide">
             
-            {/* Question Header - Compact */}
-            <div className="flex-none text-center mb-3 md:mb-5">
-                 <div className="inline-block mb-1.5 px-2 py-0.5 bg-purple-100 text-[#6C5CE7] rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-wider">
+            {/* Question Area - Left Aligned & Contained */}
+            <div className="flex-none mb-3 md:mb-5 w-full flex flex-col items-start gap-2">
+                 <div className="px-2 py-0.5 bg-purple-100 text-[#6C5CE7] rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-wider">
                     {currentQuestion.category} • {currentQuestion.question_type === 'single_choice' ? 'Eine Antwort' : 'Mehrere'}
                  </div>
-                 <h2 className="text-base md:text-lg lg:text-xl font-extrabold text-gray-800 leading-snug">
-                    {currentQuestion.question_text}
-                 </h2>
+                 <div className="w-full p-3 md:p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm text-left">
+                     <h2 className="text-base md:text-lg lg:text-xl font-extrabold text-gray-800 leading-snug">
+                        {currentQuestion.question_text}
+                     </h2>
+                 </div>
             </div>
 
             {/* Answer Options - Auto distribute height */}
