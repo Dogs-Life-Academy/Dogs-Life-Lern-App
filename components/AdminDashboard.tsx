@@ -196,7 +196,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="h-full overflow-y-auto bg-gray-50 font-sans">
       <div className="bg-[#6C5CE7] text-white py-6 px-8 shadow-lg">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
             <h1 className="text-3xl font-extrabold tracking-tight">Admin Dashboard</h1>
