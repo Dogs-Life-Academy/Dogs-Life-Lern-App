@@ -60,20 +60,16 @@
     <div id="root" class="h-full w-full"></div>
     <script type="module" src="./index.tsx"></script>
     
-    <!-- Service Worker Registration (Disabled for Dev/Preview to prevent 404s) -->
-    <!-- 
+    <!-- EMERGENCY FIX: Force Unregister Service Workers to clear 404 cache issues -->
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then((registration) => {
-              console.log('ServiceWorker registration successful with scope: ', registration.scope);
-            }, (err) => {
-              console.log('ServiceWorker registration failed: ', err);
-            });
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            console.log('Unregistering Service Worker to fix 404s:', registration);
+            registration.unregister();
+          }
         });
       }
-    </script> 
-    -->
+    </script>
   </body>
 </html>
