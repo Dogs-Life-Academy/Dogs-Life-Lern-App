@@ -127,7 +127,7 @@ const QuizGame: React.FC<QuizGameProps> = ({ questions, onFinish, onExit, timeLi
                  <div className="inline-block mb-1.5 px-2 py-0.5 bg-purple-100 text-[#6C5CE7] rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-wider">
                     {currentQuestion.category} • {currentQuestion.question_type === 'single_choice' ? 'Eine Antwort' : 'Mehrere'}
                  </div>
-                 <h2 className="text-base md:text-lg lg:text-xl font-extrabold text-gray-800 leading-snug line-clamp-4 md:line-clamp-none">
+                 <h2 className="text-base md:text-lg lg:text-xl font-extrabold text-gray-800 leading-snug">
                     {currentQuestion.question_text}
                  </h2>
             </div>
@@ -146,7 +146,7 @@ const QuizGame: React.FC<QuizGameProps> = ({ questions, onFinish, onExit, timeLi
                                     : 'bg-white border-gray-200 text-gray-600 hover:border-[#8c7ae6] hover:bg-purple-50'
                             }`}
                         >
-                            <span className="flex-1 pr-2 line-clamp-3">{option}</span>
+                            <span className="flex-1 pr-2">{option}</span>
                             <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ml-2 ${
                                 isSelected ? 'border-white bg-white/20' : 'border-gray-300'
                             }`}>
