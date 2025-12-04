@@ -146,7 +146,7 @@ function App() {
                     placeholder="Passwort eingeben" 
                     value={adminPassword}
                     onChange={(e) => setAdminPassword(e.target.value)}
-                    className={`w-full p-4 bg-gray-50 border-2 rounded-xl focus:outline-none font-bold text-gray-600 placeholder-gray-400 transition-colors ${
+                    className={`w-full p-4 bg-white border-2 rounded-xl focus:outline-none font-bold text-gray-600 placeholder-gray-400 transition-colors ${
                       passwordError 
                         ? 'border-red-400 focus:border-red-500' 
                         : 'border-gray-100 focus:border-[#6C5CE7]'
