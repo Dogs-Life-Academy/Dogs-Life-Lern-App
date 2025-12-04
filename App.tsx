@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, UserRole, QuizConfig, Question, UserAnswers } from './types.ts';
 import { fetchQuizQuestions } from './services/supabaseClient.ts';
 import AdminDashboard from './components/AdminDashboard.tsx';
@@ -18,6 +18,36 @@ function App() {
   
   const [userAnswers, setUserAnswers] = useState<UserAnswers>({});
   const [showIntroModal, setShowIntroModal] = useState(false);
+
+  // PWA Install State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    // Show the install prompt
+    deferredPrompt.prompt();
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    // Optionally, send analytics event with outcome of user choice
+    console.log(`User response to the install prompt: ${outcome}`);
+    // We've used the prompt, and can't use it again, throw it away
+    setDeferredPrompt(null);
+  };
 
   // Navigation Helpers
   const goHome = () => {
@@ -92,6 +122,17 @@ function App() {
       case 'START':
         return (
           <div className="min-h-screen bg-[#6C5CE7] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+            {/* Install App Button */}
+            {deferredPrompt && (
+              <button
+                onClick={handleInstallClick}
+                className="absolute top-6 right-6 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg text-sm font-bold backdrop-blur-sm transition-all shadow-lg flex items-center gap-2 z-50"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                App installieren
+              </button>
+            )}
+
             {/* Decorative circles */}
             <div className="absolute top-10 left-10 w-20 h-20 bg-white opacity-10 rounded-full"></div>
             <div className="absolute bottom-10 right-10 w-32 h-32 bg-white opacity-10 rounded-full"></div>
@@ -146,7 +187,7 @@ function App() {
                     placeholder="Passwort eingeben" 
                     value={adminPassword}
                     onChange={(e) => setAdminPassword(e.target.value)}
-                    className={`w-full p-4 bg-white border-2 rounded-xl focus:outline-none font-bold text-gray-600 placeholder-gray-400 transition-colors ${
+                    className={`w-full p-4 border-2 rounded-xl focus:outline-none font-bold text-gray-600 placeholder-gray-400 transition-colors bg-white ${
                       passwordError 
                         ? 'border-red-400 focus:border-red-500' 
                         : 'border-gray-100 focus:border-[#6C5CE7]'
