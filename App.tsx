@@ -60,8 +60,8 @@ function App() {
       
       setQuizQuestions(questions);
 
-      // Check for Modal Condition: Trainerprüfung AND 60 questions
-      if (quizConfig.category === 'Trainerprüfung' && quizConfig.count === 60) {
+      // Check for Modal Condition: ANY category AND 60 questions
+      if (quizConfig.count === 60) {
         setShowIntroModal(true);
         setLoading(false);
       } else {
@@ -114,7 +114,7 @@ function App() {
                   onClick={() => handleRoleSelect('PARTICIPANT')}
                   className="w-full py-4 bg-[#FF9F43] hover:bg-[#ffb063] text-white rounded-xl font-bold text-xl shadow-[0_4px_0_rgb(200,120,50)] active:shadow-none active:translate-y-[4px] transition-all"
                 >
-                  Test starten
+                  Los geht's!
                 </button>
               </div>
             </div>
@@ -257,7 +257,7 @@ function App() {
               </div>
             </div>
 
-            {/* INTRO MODAL FOR TRAINERPRÜFUNG 60 */}
+            {/* INTRO MODAL FOR 60 QUESTIONS (Both Categories) */}
             {showIntroModal && (
               <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
                  {/* Flex container for centering - min-h-full ensures vertical scrolling works on mobile */}
@@ -267,22 +267,26 @@ function App() {
                     <div className="p-8">
                       <div className="flex justify-center mb-6">
                         <img 
-                          src="https://pruefung.hs-bw.com/wp-content/uploads/2025/05/D.O.Q.-Test.jpg" 
-                          alt="D.O.Q.-Test Logo" 
+                          src={isTrainer 
+                              ? "https://pruefung.hs-bw.com/wp-content/uploads/2025/05/D.O.Q.-Test.jpg" 
+                              : "https://pruefung.hs-bw.com/wp-content/uploads/2022/11/KoAla-Test.png"}
+                          alt="Prüfung Logo" 
                           className="max-h-24 w-auto object-contain"
                         />
                       </div>
                       
                       <h2 className="text-xl md:text-2xl font-bold text-center text-gray-800 mb-1">
-                        THEORIE - PRÜFUNG ZUM / ZUR HUNDETRAINER/IN
+                        {isTrainer ? "THEORIE - PRÜFUNG ZUM / ZUR HUNDETRAINER/IN" : "THEORIE - PRÜFUNG HUNDEFÜHRERSCHEIN"}
                       </h2>
                       <h3 className="text-lg md:text-xl font-medium text-center text-gray-600 mb-6">
-                        Prüfungsbogen Hundetrainer
+                        {isTrainer ? "Prüfungsbogen Hundetrainer" : "Prüfungsbogen Sachkundenachweis"}
                       </h3>
 
                       <div className="text-sm md:text-base text-gray-700 space-y-4 mb-8">
                         <p className="font-bold italic text-center">
-                          Für die interne Prüfung zum selbständigen Hundetrainer und zur Vorbereitung auf die Prüfung zum behördlich zertifizierten Hundetrainer nach §11 Abs. 1 Satz 1 Nummer 8 Buchstabe f TierSchG
+                          {isTrainer 
+                            ? "Für die interne Prüfung zum selbständigen Hundetrainer und zur Vorbereitung auf die Prüfung zum behördlich zertifizierten Hundetrainer nach §11 Abs. 1 Satz 1 Nummer 8 Buchstabe f TierSchG" 
+                            : "Vorbereitung auf den behördlichen Sachkundenachweis für Hundehalter."}
                         </p>
                         
                         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
