@@ -69,7 +69,7 @@ function App() {
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminPassword === 'admin123') {
+    if (adminPassword === '25CH07hsbw+') {
       setRole('ADMIN');
       setCurrentView('ADMIN_DASHBOARD');
       setPasswordError(false);
