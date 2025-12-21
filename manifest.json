@@ -1,6 +1,7 @@
+
 {
-  "name": "Dogs Life Academy",
-  "short_name": "Dogs Life",
+  "name": "Dog´s Life Academy",
+  "short_name": "Dog´s Life",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#6C5CE7",

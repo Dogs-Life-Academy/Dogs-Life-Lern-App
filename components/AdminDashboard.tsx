@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchQuestions, deleteQuestion, upsertQuestion, bulkInsertQuestions } from '../services/supabaseClient.ts';
 import { Question, QuestionType, CsvRow } from '../types.ts';
@@ -107,7 +108,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     // Title
     doc.setFontSize(18);
     const titleSuffix = exportCategory ? ` (${exportCategory})` : '';
-    doc.text(`Dogs Life Academy - Fragenkatalog${titleSuffix}`, margin, yPos);
+    doc.text(`Dog´s Life Academy - Fragenkatalog${titleSuffix}`, margin, yPos);
     yPos += 10;
     
     doc.setFontSize(10);

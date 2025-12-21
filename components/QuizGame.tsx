@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Question, UserAnswers } from '../types.ts';
 
@@ -116,43 +117,43 @@ const QuizGame: React.FC<QuizGameProps> = ({ questions, onFinish, onExit, timeLi
         </div>
       </div>
 
-      {/* 2. Content Area - Optimized for No Scroll */}
+      {/* 2. Content Area - Optimized for Long Text Scrolling */}
       <div className="flex-1 w-full max-w-3xl mx-auto bg-white rounded-t-[20px] shadow-2xl overflow-hidden flex flex-col min-h-0 relative z-0">
         
-        {/* Inner Container - Flex Column to distribute space */}
-        <div id="quiz-content-area" className="flex-1 flex flex-col p-4 overflow-y-auto scrollbar-hide">
+        {/* Unified Scroll Container: Both Question and Answers scroll together */}
+        <div id="quiz-content-area" className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
             
-            {/* Question Area - Left Aligned & Contained */}
-            <div className="flex-none mb-3 md:mb-5 w-full flex flex-col items-start gap-2">
-                 <div className="px-2 py-0.5 bg-purple-100 text-[#6C5CE7] rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-wider">
-                    {currentQuestion.category} • {currentQuestion.question_type === 'single_choice' ? 'Eine Antwort' : 'Mehrere'}
+            {/* Question Area - Left Aligned */}
+            <div className="mb-4 md:mb-6 w-full flex flex-col items-start gap-2">
+                 <div className="px-2.5 py-1 bg-purple-100 text-[#6C5CE7] rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider">
+                    {currentQuestion.category} • {currentQuestion.question_type === 'single_choice' ? 'Eine Antwort' : 'Mehrere Antworten'}
                  </div>
-                 <div className="w-full p-3 md:p-4 rounded-xl border-2 border-gray-200 bg-white shadow-sm text-left">
-                     <h2 className="text-base md:text-lg lg:text-xl font-extrabold text-gray-800 leading-snug">
+                 <div className="w-full p-4 md:p-5 rounded-2xl border-2 border-gray-100 bg-gray-50/50 shadow-sm text-left">
+                     <h2 className="text-lg md:text-xl lg:text-2xl font-extrabold text-gray-800 leading-snug">
                         {currentQuestion.question_text}
                      </h2>
                  </div>
             </div>
 
-            {/* Answer Options - Auto distribute height */}
-            <div className="flex-1 flex flex-col justify-center gap-2 md:gap-3 min-h-0">
+            {/* Answer Options List */}
+            <div className="flex flex-col gap-3 pb-4">
                 {currentQuestion.all_answers.map((option, idx) => {
                     const isSelected = (answers[currentQuestion.id] || []).includes(option);
                     return (
                         <button 
                             key={idx}
                             onClick={() => handleOptionToggle(option)}
-                            className={`w-full text-left p-3 md:p-4 rounded-xl border-2 font-bold text-sm md:text-base transition-all transform active:scale-[0.99] flex items-center justify-between group leading-tight shrink-0 ${
+                            className={`w-full text-left p-4 md:p-5 rounded-2xl border-2 font-bold text-sm md:text-base transition-all transform active:scale-[0.98] flex items-start justify-between group leading-snug min-h-fit ${
                                 isSelected 
-                                    ? 'bg-[#FF9F43] border-[#FF9F43] text-white shadow-md' 
-                                    : 'bg-white border-gray-200 text-gray-600 hover:border-[#8c7ae6] hover:bg-purple-50'
+                                    ? 'bg-[#FF9F43] border-[#FF9F43] text-white shadow-lg ring-4 ring-[#FF9F43]/10' 
+                                    : 'bg-white border-gray-100 text-gray-700 hover:border-[#8c7ae6] hover:bg-purple-50 shadow-sm'
                             }`}
                         >
-                            <span className="flex-1 pr-2">{option}</span>
-                            <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ml-2 ${
-                                isSelected ? 'border-white bg-white/20' : 'border-gray-300'
+                            <span className="flex-1 pr-4 py-0.5">{option}</span>
+                            <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                                isSelected ? 'border-white bg-white/20' : 'border-gray-200'
                             }`}>
-                                {isSelected && <div className="w-2.5 h-2.5 bg-white rounded-full"></div>}
+                                {isSelected && <div className="w-3 h-3 bg-white rounded-full"></div>}
                             </div>
                         </button>
                     );
@@ -160,12 +161,12 @@ const QuizGame: React.FC<QuizGameProps> = ({ questions, onFinish, onExit, timeLi
             </div>
         </div>
 
-        {/* 3. Footer Navigation - Compact */}
-        <div className="flex-none p-3 md:p-5 bg-white border-t border-gray-100 flex justify-between items-center z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        {/* 3. Footer Navigation - Compact & Sticky */}
+        <div className="flex-none p-4 md:p-5 bg-white border-t border-gray-100 flex justify-between items-center z-10 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
             <button 
                 onClick={() => setCurrentIdx(prev => Math.max(0, prev - 1))}
                 disabled={currentIdx === 0}
-                className={`px-4 py-2.5 md:px-6 md:py-3 rounded-xl font-bold text-sm text-gray-500 bg-gray-100 ${currentIdx === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200'}`}
+                className={`px-5 py-3 md:px-7 md:py-3.5 rounded-xl font-bold text-sm text-gray-500 bg-gray-100 transition-colors ${currentIdx === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-200 active:bg-gray-300'}`}
             >
                 Zurück
             </button>
@@ -174,9 +175,9 @@ const QuizGame: React.FC<QuizGameProps> = ({ questions, onFinish, onExit, timeLi
                 <button 
                     onClick={handleFinishClick}
                     disabled={!isAllAnswered}
-                    className={`px-6 py-2.5 md:px-8 md:py-3 rounded-xl font-bold text-sm text-white shadow-lg transition-all ${
+                    className={`px-7 py-3 md:px-10 md:py-3.5 rounded-xl font-bold text-sm text-white shadow-xl transition-all ${
                         isAllAnswered 
-                            ? 'bg-[#FF9F43] hover:bg-[#ffb063] active:translate-y-[2px]' 
+                            ? 'bg-[#FF9F43] hover:bg-[#ffb063] active:translate-y-[2px] active:shadow-md' 
                             : 'bg-gray-300 cursor-not-allowed'
                     }`}
                 >
@@ -185,7 +186,7 @@ const QuizGame: React.FC<QuizGameProps> = ({ questions, onFinish, onExit, timeLi
             ) : (
                 <button 
                     onClick={() => setCurrentIdx(prev => Math.min(questions.length - 1, prev + 1))}
-                    className="px-6 py-2.5 md:px-8 md:py-3 rounded-xl font-bold text-sm text-white bg-[#FF9F43] hover:bg-[#ffb063] active:translate-y-[2px] transition-all"
+                    className="px-7 py-3 md:px-10 md:py-3.5 rounded-xl font-bold text-sm text-white bg-[#FF9F43] hover:bg-[#ffb063] active:translate-y-[2px] active:shadow-md transition-all shadow-xl shadow-orange-200"
                 >
                     Weiter
                 </button>
@@ -195,22 +196,25 @@ const QuizGame: React.FC<QuizGameProps> = ({ questions, onFinish, onExit, timeLi
 
       {/* Confirmation Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 max-w-sm w-full text-center transform scale-100 animate-in fade-in zoom-in duration-200">
-                <h3 className="text-xl font-extrabold text-[#2d3436] mb-2">Quiz beenden?</h3>
-                <p className="text-gray-500 mb-6 font-medium text-xs md:text-sm">Möchtest du das Quiz wirklich beenden?</p>
-                <div className="flex gap-3 justify-center">
-                    <button 
-                        onClick={() => setShowConfirmModal(false)}
-                        className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 font-bold text-sm"
-                    >
-                        Abbrechen
-                    </button>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center transform scale-100 animate-in fade-in zoom-in duration-200">
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-[#FF9F43]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h3 className="text-2xl font-extrabold text-[#2d3436] mb-2">Quiz beenden?</h3>
+                <p className="text-gray-500 mb-8 font-medium text-sm">Bist du bereit für die Auswertung? Du kannst deine Antworten danach nicht mehr ändern.</p>
+                <div className="flex flex-col gap-3">
                     <button 
                         onClick={confirmFinish}
-                        className="flex-1 py-2.5 bg-[#FF9F43] text-white rounded-xl hover:bg-[#ffa502] font-bold shadow-md active:translate-y-1 text-sm"
+                        className="w-full py-3.5 bg-[#FF9F43] text-white rounded-xl hover:bg-[#ffa502] font-bold shadow-lg active:translate-y-1 text-base transition-all"
                     >
-                        Auswerten
+                        Test auswerten
+                    </button>
+                    <button 
+                        onClick={() => setShowConfirmModal(false)}
+                        className="w-full py-3.5 bg-gray-50 text-gray-500 rounded-xl hover:bg-gray-100 font-bold text-base transition-all"
+                    >
+                        Noch einmal prüfen
                     </button>
                 </div>
             </div>

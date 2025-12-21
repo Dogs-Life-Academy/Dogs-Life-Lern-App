@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { View, UserRole, QuizConfig, Question, UserAnswers } from './types.ts';
 import { fetchQuizQuestions } from './services/supabaseClient.ts';
@@ -141,12 +142,12 @@ function App() {
               <div className="mb-8 flex justify-center">
                 <img 
                   src="https://pruefung.hs-bw.com/wp-content/uploads/2021/02/Logo-Dogs-Life-ohne-www.png" 
-                  alt="Dogs Life Academy" 
+                  alt="Dog´s Life Academy" 
                   className="w-48 h-auto object-contain"
                 />
               </div>
               
-              <h1 className="text-2xl font-extrabold text-gray-800 mb-2">Dogs Life Academy</h1>
+              <h1 className="text-2xl font-extrabold text-gray-800 mb-2">Dog´s Life Academy</h1>
               <h2 className="text-xl font-bold text-gray-700 mb-8">Theorie Test Prüfungen</h2>
               <p className="text-gray-500 mb-6 text-sm">Wähle eine Option, um zu starten.</p>
               
