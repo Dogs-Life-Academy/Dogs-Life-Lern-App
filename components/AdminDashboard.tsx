@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchQuestions, deleteQuestion, upsertQuestion, bulkInsertQuestions } from '../services/supabaseClient.ts';
-import { Question, QuestionType, CsvRow } from '../types.ts';
+import { fetchQuestions, deleteQuestion, upsertQuestion, bulkInsertQuestions, fetchQuizResults } from '../services/supabaseClient.ts';
+import { Question, QuestionType, CsvRow, QuizResultRecord } from '../types.ts';
 import { jsPDF } from "jspdf";
 
 interface AdminDashboardProps {
@@ -14,7 +14,10 @@ const CATEGORY_MAP: Record<string, string> = {
 };
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
+  const [activeTab, setActiveTab] = useState<'QUESTIONS' | 'RESULTS'>('QUESTIONS');
+  
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [results, setResults] = useState<QuizResultRecord[]>([]);
   const [loading, setLoading] = useState(false);
   
   // Table Filters
@@ -32,6 +35,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
   useEffect(() => {
     loadQuestions();
+    loadResults();
   }, []);
 
   const loadQuestions = async () => {
@@ -44,6 +48,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
       alert('Failed to load questions.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadResults = async () => {
+    try {
+      const data = await fetchQuizResults();
+      setResults(data);
+    } catch (error) {
+      console.error('Error loading results:', error);
     }
   };
 
@@ -345,10 +358,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
       <div className="p-6 max-w-7xl mx-auto space-y-8">
         
-        {/* Data Management Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            {/* Import Section */}
+        {/* Navigation Tabs */}
+        <div className="flex space-x-4 border-b border-gray-200 px-4">
+          <button 
+            onClick={() => setActiveTab('QUESTIONS')}
+            className={`py-3 px-6 font-bold text-lg border-b-4 transition-colors ${activeTab === 'QUESTIONS' ? 'border-[#6C5CE7] text-[#6C5CE7]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            Fragen verwalten
+          </button>
+          <button 
+            onClick={() => setActiveTab('RESULTS')}
+            className={`py-3 px-6 font-bold text-lg border-b-4 transition-colors ${activeTab === 'RESULTS' ? 'border-[#6C5CE7] text-[#6C5CE7]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            Teilnehmer-Ergebnisse
+          </button>
+        </div>
+
+        {activeTab === 'QUESTIONS' && (
+          <>
+            {/* Data Management Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                {/* Import Section */}
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between h-full">
               <div>
                   <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
@@ -722,6 +753,57 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             </div>
           </div>
         )}
+        </>
+      )}
+
+      {activeTab === 'RESULTS' && (
+        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+           <h2 className="text-2xl font-bold text-gray-800 mb-8">Teilnehmer-Ergebnisse</h2>
+           <div className="overflow-x-auto rounded-2xl border-2 border-gray-100">
+             <table className="min-w-full divide-y-2 divide-gray-100">
+               <thead className="bg-gray-50">
+                  <tr>
+                     <th className="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Datum</th>
+                     <th className="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Name</th>
+                     <th className="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Kategorie</th>
+                     <th className="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Status</th>
+                     <th className="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Score</th>
+                  </tr>
+               </thead>
+               <tbody className="bg-white divide-y divide-gray-100">
+                  {results.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-8 text-center text-sm font-bold text-gray-400">Keine Ergebnisse gefunden.</td>
+                    </tr>
+                  ) : (
+                    results.map((r, i) => (
+                      <tr key={r.id || i} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-600">
+                           {r.created_at ? new Date(r.created_at).toLocaleDateString('de-DE', {
+                             day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit'
+                           }) : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                           <div className="text-sm font-bold text-gray-800">{r.first_name} {r.last_name}</div>
+                           <div className="text-xs text-gray-500">{r.email}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-500">{r.category}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                           <span className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${r.passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              {r.passed ? 'Bestanden' : 'Nicht Bestanden'}
+                           </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-bold">
+                           {r.score_percentage}% <span className="text-gray-400 font-normal ml-2">({r.correct_count} ✔ / {r.wrong_count} ✘)</span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+               </tbody>
+             </table>
+           </div>
+        </div>
+      )}
       </div>
     </div>
   );

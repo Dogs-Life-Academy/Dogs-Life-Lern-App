@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { View, UserRole, QuizConfig, Question, UserAnswers } from './types.ts';
-import { fetchQuizQuestions } from './services/supabaseClient.ts';
+import { View, UserRole, QuizConfig, Question, UserAnswers, UserDetails, QuizResultRecord } from './types.ts';
+import { fetchQuizQuestions, saveQuizResult } from './services/supabaseClient.ts';
 import AdminDashboard from './components/AdminDashboard.tsx';
 import QuizGame from './components/QuizGame.tsx';
 import QuizResult from './components/QuizResult.tsx';
@@ -18,7 +18,11 @@ function App() {
   const [loading, setLoading] = useState(false);
   
   const [userAnswers, setUserAnswers] = useState<UserAnswers>({});
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [showIntroModal, setShowIntroModal] = useState(false);
+  const [introFirstName, setIntroFirstName] = useState('');
+  const [introLastName, setIntroLastName] = useState('');
+  const [introEmail, setIntroEmail] = useState('');
 
   // Navigation Helpers
   const goHome = () => {
@@ -27,6 +31,7 @@ function App() {
     setAdminPassword('');
     setPasswordError(false);
     setShowIntroModal(false);
+    setUserDetails(null);
   };
 
   const handleRoleSelect = (selectedRole: UserRole) => {
@@ -77,14 +82,47 @@ function App() {
     }
   };
 
-  const confirmStartQuiz = () => {
+  const confirmStartQuiz = (details: UserDetails) => {
+    setUserDetails(details);
     setShowIntroModal(false);
     setCurrentView('GAME');
   };
 
-  const finishQuiz = (answers: UserAnswers) => {
+  const finishQuiz = async (answers: UserAnswers) => {
     setUserAnswers(answers);
     setCurrentView('RESULT');
+
+    if (userDetails && quizConfig.count === 60) {
+      let correct = 0;
+      let wrong = 0;
+      quizQuestions.forEach(q => {
+          const userAns = answers[q.id] || [];
+          const isCorrect = 
+              q.correct_answers.length === userAns.length &&
+              q.correct_answers.every(a => userAns.includes(a));
+          if (isCorrect) correct++;
+          else wrong++;
+      });
+      const score = Math.round((correct / quizQuestions.length) * 100);
+      const passed = score >= 80;
+
+      const record: QuizResultRecord = {
+        first_name: userDetails.firstName,
+        last_name: userDetails.lastName,
+        email: userDetails.email,
+        category: quizConfig.category,
+        score_percentage: score,
+        correct_count: correct,
+        wrong_count: wrong,
+        passed: passed
+      };
+      
+      try {
+        await saveQuizResult(record);
+      } catch (err) {
+        console.error("Failed to save result:", err);
+      }
+    }
   };
 
   // View Rendering
@@ -304,14 +342,41 @@ function App() {
                         </div>
                       </div>
 
-                      <div className="flex justify-center">
-                        <button 
-                          onClick={confirmStartQuiz}
-                          className="bg-[#482880] hover:bg-[#3a2066] text-white font-bold py-3 px-12 rounded-lg text-lg transition shadow-lg"
-                        >
-                          Start
-                        </button>
-                      </div>
+                      <form onSubmit={(e) => {
+                          e.preventDefault();
+                          confirmStartQuiz({
+                              firstName: introFirstName,
+                              lastName: introLastName,
+                              email: introEmail
+                          });
+                      }}>
+                          <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl mb-6 space-y-4">
+                              <h4 className="font-bold text-gray-800">Bitte gib deine Daten für das Prüfungsprotokoll ein:</h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                      <label className="block text-xs font-bold text-gray-600 mb-1">Vorname *</label>
+                                      <input required type="text" value={introFirstName} onChange={e => setIntroFirstName(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 focus:border-[#482880] focus:ring-1 focus:ring-[#482880] outline-none" />
+                                  </div>
+                                  <div>
+                                      <label className="block text-xs font-bold text-gray-600 mb-1">Nachname *</label>
+                                      <input required type="text" value={introLastName} onChange={e => setIntroLastName(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 focus:border-[#482880] focus:ring-1 focus:ring-[#482880] outline-none" />
+                                  </div>
+                              </div>
+                              <div>
+                                  <label className="block text-xs font-bold text-gray-600 mb-1">E-Mail-Adresse *</label>
+                                  <input required type="email" value={introEmail} onChange={e => setIntroEmail(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 focus:border-[#482880] focus:ring-1 focus:ring-[#482880] outline-none" />
+                              </div>
+                          </div>
+
+                          <div className="flex justify-center">
+                            <button 
+                              type="submit"
+                              className="bg-[#482880] hover:bg-[#3a2066] text-white font-bold py-3 px-12 rounded-lg text-lg transition shadow-lg"
+                            >
+                              Start
+                            </button>
+                          </div>
+                      </form>
                     </div>
                   </div>
                 </div>
