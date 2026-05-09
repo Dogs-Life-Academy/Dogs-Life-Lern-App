@@ -70,9 +70,16 @@ const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onResta
                             <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3 ${q.isCorrect ? 'bg-[#2ecc71] text-white' : 'bg-[#e17055] text-white'}`}>
                                 {idx + 1}
                             </span>
-                            <h3 className="text-sm font-bold text-gray-800 leading-tight">
-                                {q.question_text}
-                            </h3>
+                            <div className="flex-1">
+                                <h3 className="text-sm font-bold text-gray-800 leading-tight">
+                                    {q.question_text}
+                                </h3>
+                                {q.image_url && (
+                                    <div className="mt-3">
+                                        <img src={q.image_url} alt="Bild zur Frage" className="max-h-32 object-contain rounded border border-gray-100 shadow-sm" />
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="space-y-2">

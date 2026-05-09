@@ -26,6 +26,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Partial<Question> | null>(null);
+  const [deletingQuestionId, setDeletingQuestionId] = useState<number | null>(null);
+  const [previewQuestion, setPreviewQuestion] = useState<Question | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -58,20 +60,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     }
 
     // CSV Header
-    const headers = ["question,question_type,answers,correct_answers,category"];
+    const headers = ["question,question_type,answers,correct_answers,category,image_url"];
 
     // CSV Rows
     const rows = dataToExport.map(q => {
         // Escape quotes by doubling them: " -> ""
-        const escape = (txt: string) => `"${txt.replace(/"/g, '""')}"`;
+        const escape = (txt: string) => `"${(txt || '').replace(/"/g, '""')}"`;
         
         const qText = escape(q.question_text);
         const qType = escape(q.question_type);
         const answers = escape(q.all_answers.join(';'));
         const correct = escape(q.correct_answers.join(';'));
         const cat = escape(q.category);
+        const img = escape(q.image_url || '');
 
-        return `${qText},${qType},${answers},${correct},${cat}`;
+        return `${qText},${qType},${answers},${correct},${cat},${img}`;
     });
 
     const csvContent = [headers, ...rows].join('\n');
@@ -203,7 +206,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             question_type: qType as QuestionType,
             all_answers: row.answers.split(';').map(s => s.trim()).filter(Boolean),
             correct_answers: row.correct_answers.split(';').map(s => s.trim()).filter(Boolean),
-            category: category
+            category: category,
+            image_url: row.image_url || ''
           };
         }).filter((q): q is Partial<Question> => {
            return q !== null && !!q.question_text && (q.all_answers?.length || 0) > 0;
@@ -265,20 +269,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             row.answers = values[2];
             row.correct_answers = values[3];
             row.category = values[4];
+            row.image_url = values[5] || '';
             result.push(row);
         }
     }
     return result;
   };
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this question?')) {
-      try {
-        await deleteQuestion(id);
-        setQuestions(prev => prev.filter(q => q.id !== id));
-      } catch (error) {
-        alert('Failed to delete question.');
-      }
+  const handleDeleteRequest = (id: number) => {
+    setDeletingQuestionId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (deletingQuestionId === null) return;
+    try {
+      await deleteQuestion(deletingQuestionId);
+      setQuestions(prev => prev.filter(q => q.id !== deletingQuestionId));
+    } catch (error) {
+      alert('Failed to delete question.');
+    } finally {
+      setDeletingQuestionId(null);
     }
   };
 
@@ -293,7 +303,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
       question_type: 'single_choice',
       all_answers: [''],
       correct_answers: [],
-      category: 'Hundeführerschein'
+      category: 'Hundeführerschein',
+      image_url: ''
     });
     setIsModalOpen(true);
   };
@@ -364,7 +375,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
               </div>
               <div>
                   {loading && <span className="text-[#6C5CE7] font-bold animate-pulse block mt-2">Processing...</span>}
-                  <p className="text-xs text-gray-400 mt-3 font-medium">Spalten: question, question_type, answers, correct_answers, category</p>
+                  <p className="text-xs text-gray-400 mt-3 font-medium">Spalten: question, question_type, answers, correct_answers, category, image_url</p>
               </div>
             </div>
 
@@ -460,8 +471,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-500">{q.category}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button onClick={() => setPreviewQuestion(q)} className="text-[#00b894] hover:text-[#009688] font-bold mr-4">Preview</button>
                       <button onClick={() => handleEdit(q)} className="text-[#6C5CE7] hover:text-[#5f4dd0] font-bold mr-4">Edit</button>
-                      <button onClick={() => handleDelete(q.id)} className="text-[#e17055] hover:text-[#c0392b] font-bold">Delete</button>
+                      <button onClick={() => handleDeleteRequest(q.id)} className="text-[#e17055] hover:text-[#c0392b] font-bold">Delete</button>
                     </td>
                   </tr>
                 ))}
@@ -470,6 +482,100 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             {filteredQuestions.length === 0 && <div className="p-8 text-center text-gray-400 font-bold">Keine Fragen gefunden.</div>}
           </div>
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {deletingQuestionId !== null && (
+          <div className="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center z-[60] p-4">
+             <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center transform scale-100 animate-in fade-in zoom-in duration-200">
+                <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                   ⚠️
+                </div>
+                <h3 className="text-xl font-extrabold text-gray-800 mb-2">Frage löschen?</h3>
+                <p className="text-gray-500 text-sm font-medium mb-6">Diese Aktion kann nicht rückgängig gemacht werden. Möchtest du diese Frage wirklich löschen?</p>
+                <div className="flex space-x-3 w-full">
+                  <button 
+                    onClick={() => setDeletingQuestionId(null)}
+                    className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition"
+                  >
+                    Abbrechen
+                  </button>
+                  <button 
+                    onClick={confirmDelete}
+                    className="flex-1 px-4 py-3 rounded-xl shadow-lg text-sm font-bold text-white bg-[#e17055] hover:bg-[#c0392b] transition transform hover:scale-105"
+                  >
+                    Löschen
+                  </button>
+                </div>
+             </div>
+          </div>
+        )}
+
+        {/* Preview Modal */}
+        {previewQuestion && (
+          <div className="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center z-[70] p-4">
+             <div className="bg-white p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-2xl relative text-center transform scale-100 animate-in fade-in zoom-in duration-200">
+                <button 
+                  onClick={() => setPreviewQuestion(null)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                
+                <h3 className="text-xl font-extrabold text-gray-800 mb-6 border-b pb-4">Fragen-Vorschau</h3>
+                
+                <div className="bg-gray-50/50 rounded-2xl p-4 md:p-6 border-2 border-gray-100 flex flex-col items-center space-y-5">
+                    <div className="px-3 py-1 bg-purple-100 text-[#6C5CE7] rounded-full text-xs font-bold uppercase tracking-wider inline-block">
+                        {previewQuestion.category} • {previewQuestion.question_type === 'single_choice' ? 'Eine Antwort' : 'Mehrere Antworten'}
+                    </div>
+
+                    {previewQuestion.image_url && (
+                        <div className="w-full rounded-2xl border-2 border-gray-100 shadow-sm bg-white flex justify-center p-2 mb-4">
+                            <img src={previewQuestion.image_url} alt="Bild zur Frage" className="max-h-64 object-contain rounded-xl" />
+                        </div>
+                    )}
+
+                    <div className="w-full p-4 rounded-xl bg-white border border-gray-100 shadow-sm text-left mb-6">
+                        <h2 className="text-lg md:text-xl font-extrabold text-gray-800 leading-snug">
+                            {previewQuestion.question_text}
+                        </h2>
+                    </div>
+
+                    <div className="w-full space-y-3">
+                        {previewQuestion.all_answers.map((answer, index) => {
+                            const isCorrect = previewQuestion.correct_answers.includes(answer);
+                            return (
+                                <div 
+                                    key={index} 
+                                    className={`w-full p-4 rounded-xl border-2 text-left font-bold transition-all relative
+                                        ${isCorrect ? 'border-[#00b894] bg-[#e6fbf5] text-[#00b894]' : 'border-gray-200 bg-white text-gray-600'}
+                                    `}
+                                >
+                                    <div className="flex items-center">
+                                       <div className={`w-6 h-6 rounded-md border-2 mr-3 flex items-center justify-center
+                                          ${isCorrect ? 'bg-[#00b894] border-[#00b894]' : 'border-gray-300'}
+                                       `}>
+                                          {isCorrect && <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>}
+                                       </div>
+                                       {answer}
+                                    </div>
+                                    {isCorrect && <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xs font-extrabold text-[#00b894] uppercase bg-[#c2f0e3] px-2 py-1 rounded">Richtig</span>}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+                
+                <div className="mt-8 flex justify-center">
+                   <button 
+                     onClick={() => setPreviewQuestion(null)}
+                     className="px-8 py-3 rounded-xl shadow-lg text-sm font-bold text-white bg-[#6C5CE7] hover:bg-[#5a4bcf] transition transform hover:scale-105"
+                   >
+                     Vorschau schließen
+                   </button>
+                </div>
+             </div>
+          </div>
+        )}
 
         {/* Modal for Add/Edit */}
         {isModalOpen && editingQuestion && (
@@ -486,6 +592,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                     value={editingQuestion.question_text}
                     onChange={e => setEditingQuestion({...editingQuestion, question_text: e.target.value})}
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-600 mb-2">Bild URL (Optional)</label>
+                  <input 
+                    type="url"
+                    placeholder="https://beispiel.de/bild.jpg"
+                    className="w-full border-2 border-gray-200 rounded-xl p-3 focus:outline-none focus:border-[#6C5CE7] transition bg-white"
+                    value={editingQuestion.image_url || ''}
+                    onChange={e => setEditingQuestion({...editingQuestion, image_url: e.target.value})}
+                  />
+                  {editingQuestion.image_url && (
+                    <div className="mt-3 bg-gray-50 border border-gray-200 rounded-xl p-2 flex justify-center">
+                       <img 
+                          src={editingQuestion.image_url} 
+                          alt="Vorschau" 
+                          className="max-h-32 object-contain rounded-lg"
+                       />
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">

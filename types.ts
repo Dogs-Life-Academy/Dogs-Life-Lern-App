@@ -7,6 +7,7 @@ export interface Question {
   all_answers: string[];
   correct_answers: string[];
   category: string;
+  image_url?: string;
 }
 
 export type View = 'START' | 'SELECTION' | 'GAME' | 'RESULT' | 'ADMIN_LOGIN' | 'ADMIN_DASHBOARD';
@@ -26,4 +27,5 @@ export interface CsvRow {
   answers: string;
   correct_answers: string;
   category: string;
+  image_url?: string;
 }

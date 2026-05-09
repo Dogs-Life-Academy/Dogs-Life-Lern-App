@@ -56,21 +56,12 @@
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
   <body class="bg-[#6C5CE7] text-gray-800 font-sans antialiased h-[100dvh] w-screen overflow-hidden">
     <div id="root" class="h-full w-full"></div>
     <script type="module" src="./index.tsx"></script>
     
-    <!-- EMERGENCY FIX: Force Unregister Service Workers to clear 404 cache issues -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            console.log('Unregistering Service Worker to fix 404s:', registration);
-            registration.unregister();
-          }
-        });
-      }
-    </script>
-  </body>
+  <script type="module" src="/index.tsx"></script>
+</body>
 </html>

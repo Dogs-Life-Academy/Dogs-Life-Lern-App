@@ -128,6 +128,13 @@ const QuizGame: React.FC<QuizGameProps> = ({ questions, onFinish, onExit, timeLi
                  <div className="px-2.5 py-1 bg-purple-100 text-[#6C5CE7] rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider">
                     {currentQuestion.category} • {currentQuestion.question_type === 'single_choice' ? 'Eine Antwort' : 'Mehrere Antworten'}
                  </div>
+                 
+                 {currentQuestion.image_url && (
+                     <div className="w-full rounded-2xl border-2 border-gray-100 shadow-sm bg-gray-50/50 flex justify-center p-2">
+                         <img src={currentQuestion.image_url} alt="Bild zur Frage" className="max-h-64 object-contain rounded-xl" />
+                     </div>
+                 )}
+
                  <div className="w-full p-4 md:p-5 rounded-2xl border-2 border-gray-100 bg-gray-50/50 shadow-sm text-left">
                      <h2 className="text-lg md:text-xl lg:text-2xl font-extrabold text-gray-800 leading-snug">
                         {currentQuestion.question_text}

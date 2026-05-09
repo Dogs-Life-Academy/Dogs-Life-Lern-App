@@ -1,5 +1,6 @@
 {
   "name": "Dog´s Life Test App",
   "description": "A comprehensive quiz application for dog trainer certification and license preparation, featuring user and admin modes, CSV imports, and detailed result analysis.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }
