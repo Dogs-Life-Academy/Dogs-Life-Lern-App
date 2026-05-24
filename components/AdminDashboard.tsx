@@ -14,9 +14,7 @@ const CATEGORY_MAP: Record<string, string> = {
 };
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
-  const [activeTab, setActiveTab] = useState<'QUESTIONS' | 'RESULTS' | 'SETTINGS'>('QUESTIONS');
-  
-  const [logoInput, setLogoInput] = useState(() => localStorage.getItem('appLogoUrl') || 'https://pruefung.hs-bw.com/wp-content/uploads/2021/02/Logo-Dogs-Life-ohne-www.png');
+  const [activeTab, setActiveTab] = useState<'QUESTIONS' | 'RESULTS'>('QUESTIONS');
   
   const [questions, setQuestions] = useState<Question[]>([]);
   const [results, setResults] = useState<QuizResultRecord[]>([]);
@@ -390,12 +388,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             className={`py-3 px-6 font-bold text-lg border-b-4 transition-colors ${activeTab === 'RESULTS' ? 'border-[#6C5CE7] text-[#6C5CE7]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             Teilnehmer-Ergebnisse
-          </button>
-          <button 
-            onClick={() => setActiveTab('SETTINGS')}
-            className={`py-3 px-6 font-bold text-lg border-b-4 transition-colors ${activeTab === 'SETTINGS' ? 'border-[#6C5CE7] text-[#6C5CE7]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-          >
-            Einstellungen
           </button>
         </div>
 
@@ -859,41 +851,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                   Löschen
                 </button>
               </div>
-           </div>
-        </div>
-      )}
-
-      {activeTab === 'SETTINGS' && (
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-           <h2 className="text-2xl font-bold text-gray-800 mb-8">Allgemeine Einstellungen</h2>
-           <div className="max-w-xl">
-             <div className="mb-6">
-                <label className="block text-sm font-bold text-gray-600 mb-2">Logo URL (Startseite)</label>
-                <div className="flex space-x-4">
-                  <input 
-                    type="url" 
-                    value={logoInput}
-                    onChange={(e) => setLogoInput(e.target.value)}
-                    placeholder="https://beispiel.de/logo.png"
-                    className="w-full border-2 border-gray-200 rounded-xl p-3 focus:outline-none focus:border-[#6C5CE7] transition bg-white"
-                  />
-                  <button 
-                    onClick={() => {
-                      localStorage.setItem('appLogoUrl', logoInput);
-                      alert('Logo wurde gespeichert!');
-                    }}
-                    className="px-6 py-3 rounded-xl shadow-md text-sm font-bold text-white bg-[#6C5CE7] hover:bg-[#5a4bcf] transition"
-                  >
-                    Speichern
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">Das Logo wird auf der Startseite angezeigt.</p>
-             </div>
-             {logoInput && (
-               <div className="mt-6 p-6 border-2 border-gray-100 rounded-2xl bg-gray-50 flex items-center justify-center">
-                 <img src={logoInput} alt="Logo Vorschau" className="max-h-32 object-contain" />
-               </div>
-             )}
            </div>
         </div>
       )}
