@@ -11,13 +11,6 @@ function App() {
   const [role, setRole] = useState<UserRole>(null);
   const [adminPassword, setAdminPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
-  const [appLogoUrl, setAppLogoUrl] = useState(() => localStorage.getItem('appLogoUrl') || 'https://pruefung.hs-bw.com/wp-content/uploads/2021/02/Logo-Dogs-Life-ohne-www.png');
-  
-  useEffect(() => {
-     if (currentView === 'START') {
-        setAppLogoUrl(localStorage.getItem('appLogoUrl') || 'https://pruefung.hs-bw.com/wp-content/uploads/2021/02/Logo-Dogs-Life-ohne-www.png');
-     }
-  }, [currentView]);
   
   // Default count 5
   const [quizConfig, setQuizConfig] = useState<QuizConfig>({ category: 'Hundeführerschein', count: 5 });
@@ -145,7 +138,7 @@ function App() {
             <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center relative z-10">
               <div className="mb-8 flex justify-center">
                 <img 
-                  src={appLogoUrl} 
+                  src="https://trainer.hs-bw.com/wp-content/uploads/2023/02/Logo-Dogs-Life-ohne-Hintergrund.png" 
                   alt="Dog´s Life Academy" 
                   className="w-48 h-auto object-contain min-h-[60px]"
                 />
