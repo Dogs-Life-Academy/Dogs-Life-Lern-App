@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchQuestions, deleteQuestion, upsertQuestion, bulkInsertQuestions, fetchQuizResults } from '../services/supabaseClient.ts';
+import { fetchQuestions, deleteQuestion, upsertQuestion, bulkInsertQuestions, fetchQuizResults, deleteQuizResult } from '../services/supabaseClient.ts';
 import { Question, QuestionType, CsvRow, QuizResultRecord } from '../types.ts';
 import { jsPDF } from "jspdf";
 
@@ -14,7 +14,9 @@ const CATEGORY_MAP: Record<string, string> = {
 };
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
-  const [activeTab, setActiveTab] = useState<'QUESTIONS' | 'RESULTS'>('QUESTIONS');
+  const [activeTab, setActiveTab] = useState<'QUESTIONS' | 'RESULTS' | 'SETTINGS'>('QUESTIONS');
+  
+  const [logoInput, setLogoInput] = useState(() => localStorage.getItem('appLogoUrl') || 'https://pruefung.hs-bw.com/wp-content/uploads/2021/02/Logo-Dogs-Life-ohne-www.png');
   
   const [questions, setQuestions] = useState<Question[]>([]);
   const [results, setResults] = useState<QuizResultRecord[]>([]);
@@ -30,6 +32,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Partial<Question> | null>(null);
   const [deletingQuestionId, setDeletingQuestionId] = useState<number | null>(null);
+  const [deletingResultId, setDeletingResultId] = useState<string | number | null>(null);
   const [previewQuestion, setPreviewQuestion] = useState<Question | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -305,6 +308,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     }
   };
 
+  const handleDeleteResultRequest = (id: string | number) => {
+    setDeletingResultId(id);
+  };
+
+  const confirmDeleteResult = async () => {
+    if (deletingResultId === null) return;
+    try {
+      await deleteQuizResult(deletingResultId);
+      setResults(prev => prev.filter(r => r.id !== deletingResultId));
+    } catch (error: any) {
+      alert(`Es gab ein Problem: ${error.message || 'Löschen fehlgeschlagen.'}\n(Fehlen vielleicht die RLS/DELETE-Rechte in Supabase?)`);
+    } finally {
+      setDeletingResultId(null);
+    }
+  };
+
   const handleEdit = (question: Question) => {
     setEditingQuestion(question);
     setIsModalOpen(true);
@@ -371,6 +390,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
             className={`py-3 px-6 font-bold text-lg border-b-4 transition-colors ${activeTab === 'RESULTS' ? 'border-[#6C5CE7] text-[#6C5CE7]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             Teilnehmer-Ergebnisse
+          </button>
+          <button 
+            onClick={() => setActiveTab('SETTINGS')}
+            className={`py-3 px-6 font-bold text-lg border-b-4 transition-colors ${activeTab === 'SETTINGS' ? 'border-[#6C5CE7] text-[#6C5CE7]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            Einstellungen
           </button>
         </div>
 
@@ -768,12 +793,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                      <th className="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Kategorie</th>
                      <th className="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Status</th>
                      <th className="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Score</th>
+                     <th className="px-6 py-4 text-right text-xs font-extrabold text-gray-500 uppercase tracking-wider">Aktionen</th>
                   </tr>
                </thead>
                <tbody className="bg-white divide-y divide-gray-100">
                   {results.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-sm font-bold text-gray-400">Keine Ergebnisse gefunden.</td>
+                      <td colSpan={6} className="px-6 py-8 text-center text-sm font-bold text-gray-400">Keine Ergebnisse gefunden.</td>
                     </tr>
                   ) : (
                     results.map((r, i) => (
@@ -796,11 +822,78 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-bold">
                            {r.score_percentage}% <span className="text-gray-400 font-normal ml-2">({r.correct_count} ✔ / {r.wrong_count} ✘)</span>
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                           {r.id && (
+                             <button onClick={() => handleDeleteResultRequest(r.id)} className="text-[#e17055] hover:text-[#c0392b] font-bold">Löschen</button>
+                           )}
+                        </td>
                       </tr>
                     ))
                   )}
                </tbody>
              </table>
+           </div>
+        </div>
+      )}
+
+      {/* Delete Result Confirmation Modal */}
+      {deletingResultId !== null && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center z-[60] p-4">
+           <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center transform scale-100 animate-in fade-in zoom-in duration-200">
+              <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                 ⚠️
+              </div>
+              <h3 className="text-xl font-extrabold text-gray-800 mb-2">Ergebnis löschen?</h3>
+              <p className="text-gray-500 text-sm font-medium mb-6">Diese Aktion kann nicht rückgängig gemacht werden. Möchtest du dieses Ergebnis wirklich löschen?</p>
+              <div className="flex space-x-3 w-full">
+                <button 
+                  onClick={() => setDeletingResultId(null)}
+                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition"
+                >
+                  Abbrechen
+                </button>
+                <button 
+                  onClick={confirmDeleteResult}
+                  className="flex-1 px-4 py-3 rounded-xl shadow-lg text-sm font-bold text-white bg-[#e17055] hover:bg-[#c0392b] transition transform hover:scale-105"
+                >
+                  Löschen
+                </button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {activeTab === 'SETTINGS' && (
+        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+           <h2 className="text-2xl font-bold text-gray-800 mb-8">Allgemeine Einstellungen</h2>
+           <div className="max-w-xl">
+             <div className="mb-6">
+                <label className="block text-sm font-bold text-gray-600 mb-2">Logo URL (Startseite)</label>
+                <div className="flex space-x-4">
+                  <input 
+                    type="url" 
+                    value={logoInput}
+                    onChange={(e) => setLogoInput(e.target.value)}
+                    placeholder="https://beispiel.de/logo.png"
+                    className="w-full border-2 border-gray-200 rounded-xl p-3 focus:outline-none focus:border-[#6C5CE7] transition bg-white"
+                  />
+                  <button 
+                    onClick={() => {
+                      localStorage.setItem('appLogoUrl', logoInput);
+                      alert('Logo wurde gespeichert!');
+                    }}
+                    className="px-6 py-3 rounded-xl shadow-md text-sm font-bold text-white bg-[#6C5CE7] hover:bg-[#5a4bcf] transition"
+                  >
+                    Speichern
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Das Logo wird auf der Startseite angezeigt.</p>
+             </div>
+             {logoInput && (
+               <div className="mt-6 p-6 border-2 border-gray-100 rounded-2xl bg-gray-50 flex items-center justify-center">
+                 <img src={logoInput} alt="Logo Vorschau" className="max-h-32 object-contain" />
+               </div>
+             )}
            </div>
         </div>
       )}
