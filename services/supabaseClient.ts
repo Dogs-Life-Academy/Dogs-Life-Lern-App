@@ -46,6 +46,14 @@ export const saveQuizResult = async (result: QuizResultRecord): Promise<void> =>
   if (error) console.error("Error saving result:", error);
 };
 
+export const deleteQuizResult = async (id: string | number): Promise<void> => {
+  const { data, error } = await supabase.from('quiz_results').delete().eq('id', id).select();
+  if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new Error('Datensatz wurde nicht gefunden oder es fehlen die Rechte (RLS).');
+  }
+};
+
 export const fetchQuizResults = async (): Promise<QuizResultRecord[]> => {
   const { data, error } = await supabase
     .from('quiz_results')

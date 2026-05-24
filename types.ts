@@ -17,7 +17,7 @@ export interface UserDetails {
 }
 
 export interface QuizResultRecord {
-  id?: string;
+  id?: string | number;
   first_name: string;
   last_name: string;
   email: string;
