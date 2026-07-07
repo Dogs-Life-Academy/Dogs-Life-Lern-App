@@ -1,14 +1,20 @@
-import React from 'react';
-import { Question, UserAnswers } from '../types.ts';
+import React, { useState } from 'react';
+import { Question, UserAnswers, UserDetails } from '../types.ts';
+import { downloadCertificate } from '../services/certificateGenerator.ts';
 
 interface QuizResultProps {
   questions: Question[];
   userAnswers: UserAnswers;
   onRestart: () => void;
   onHome: () => void;
+  userDetails?: UserDetails | null;
+  category?: string;
+  questionCount?: number;
 }
 
-const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onRestart, onHome }) => {
+const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onRestart, onHome, userDetails, category, questionCount }) => {
+  const [generatingCert, setGeneratingCert] = useState(false);
+  const [certError, setCertError] = useState(false);
   // Logic to calculate score
   let correctCount = 0;
 
@@ -29,6 +35,29 @@ const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onResta
 
   const percentage = Math.round((correctCount / questions.length) * 100);
   const passed = percentage >= 80;
+
+  const canShowCertificate = passed && questionCount === 60 && !!userDetails && !!category;
+
+  const handleDownloadCertificate = async () => {
+    if (!userDetails || !category) return;
+    setGeneratingCert(true);
+    setCertError(false);
+    try {
+      await downloadCertificate({
+        firstName: userDetails.firstName,
+        lastName: userDetails.lastName,
+        dogName: userDetails.dogName,
+        chipNumber: userDetails.chipNumber,
+        category,
+        scorePercentage: percentage,
+      });
+    } catch (err) {
+      console.error('Fehler beim Erstellen des Zertifikats:', err);
+      setCertError(true);
+    } finally {
+      setGeneratingCert(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-[#1e1f26] flex flex-col h-[100dvh] w-full overflow-hidden">
@@ -55,6 +84,28 @@ const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onResta
                     <p className="text-gray-400 text-xs font-bold">
                         {correctCount} / {questions.length} richtig
                     </p>
+                    {canShowCertificate && (
+                        <>
+                            <button
+                                onClick={handleDownloadCertificate}
+                                disabled={generatingCert}
+                                className="mt-3 w-full py-3 bg-[#6C5CE7] text-white rounded-xl font-bold shadow-md active:translate-y-[1px] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                            >
+                                {generatingCert ? (
+                                    <>
+                                        <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                        </svg>
+                                        Zertifikat wird erstellt...
+                                    </>
+                                ) : 'Zertifikat herunterladen'}
+                            </button>
+                            {certError && (
+                                <p className="text-[#e17055] text-xs font-bold mt-2">Zertifikat konnte nicht erstellt werden. Bitte erneut versuchen.</p>
+                            )}
+                        </>
+                    )}
                  </div>
             </div>
         </div>

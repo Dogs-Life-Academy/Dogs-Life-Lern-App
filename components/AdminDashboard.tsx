@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { fetchQuestions, deleteQuestion, upsertQuestion, bulkInsertQuestions, fetchQuizResults, deleteQuizResult } from '../services/supabaseClient.ts';
 import { Question, QuestionType, CsvRow, QuizResultRecord } from '../types.ts';
 import { jsPDF } from "jspdf";
+import { downloadCertificate } from '../services/certificateGenerator.ts';
 
 interface AdminDashboardProps {
   onBack: () => void;
@@ -19,6 +20,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [results, setResults] = useState<QuizResultRecord[]>([]);
   const [loading, setLoading] = useState(false);
+  const [generatingCertId, setGeneratingCertId] = useState<string | number | null>(null);
   
   // Table Filters
   const [filterCategory, setFilterCategory] = useState<string>('');
@@ -105,6 +107,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
   };
 
   // --- PDF EXPORT LOGIC ---
+  const handleDownloadResultCertificate = async (r: QuizResultRecord) => {
+    if (r.id === undefined || r.id === null) return;
+    setGeneratingCertId(r.id);
+    try {
+      await downloadCertificate({
+        firstName: r.first_name,
+        lastName: r.last_name,
+        dogName: r.dog_name,
+        chipNumber: r.chip_number,
+        category: r.category,
+        scorePercentage: r.score_percentage,
+        certifiedAt: r.created_at,
+      });
+    } catch (err) {
+      console.error('Fehler beim Erstellen des Zertifikats:', err);
+      alert('Zertifikat konnte nicht erstellt werden.');
+    } finally {
+      setGeneratingCertId(null);
+    }
+  };
+
   const handleExportPDF = () => {
     // Filter questions based on specific export dropdown
     const dataToExport = exportCategory 
@@ -820,9 +843,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
                            {r.score_percentage}% <span className="text-gray-400 font-normal ml-2">({r.correct_count} ✔ / {r.wrong_count} ✘)</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                           {r.id && (
-                             <button onClick={() => handleDeleteResultRequest(r.id)} className="text-[#e17055] hover:text-[#c0392b] font-bold">Löschen</button>
-                           )}
+                           <div className="flex items-center justify-end gap-3">
+                              {r.passed && (
+                                <button
+                                  onClick={() => handleDownloadResultCertificate(r)}
+                                  disabled={generatingCertId === r.id}
+                                  className="text-[#6C5CE7] hover:text-[#4834d4] font-bold disabled:opacity-50"
+                                >
+                                  {generatingCertId === r.id ? 'Erstelle...' : 'Zertifikat'}
+                                </button>
+                              )}
+                              {r.id && (
+                                <button onClick={() => handleDeleteResultRequest(r.id)} className="text-[#e17055] hover:text-[#c0392b] font-bold">Löschen</button>
+                              )}
+                           </div>
                         </td>
                       </tr>
                     ))

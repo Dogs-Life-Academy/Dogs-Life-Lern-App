@@ -419,7 +419,17 @@ function App() {
         );
 
       case 'RESULT':
-        return <QuizResult questions={quizQuestions} userAnswers={userAnswers} onRestart={() => setCurrentView('SELECTION')} onHome={goHome} />;
+        return (
+          <QuizResult
+            questions={quizQuestions}
+            userAnswers={userAnswers}
+            onRestart={() => setCurrentView('SELECTION')}
+            onHome={goHome}
+            userDetails={userDetails}
+            category={quizConfig.category}
+            questionCount={quizConfig.count}
+          />
+        );
 
       case 'ADMIN_DASHBOARD':
         return <AdminDashboard onBack={goHome} />;
