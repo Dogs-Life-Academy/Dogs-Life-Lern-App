@@ -95,6 +95,38 @@ function App() {
     setCurrentView('GAME');
   };
 
+  // --- DEV ONLY: simulate a passed/failed 60-question exam to preview the result screen & certificate ---
+  // TODO: remove this once the certificate design is finalized.
+  const simulateQuizResult = (didPass: boolean) => {
+    const isTrainer = quizConfig.category === 'Trainerprüfung';
+    const fakeQuestions: Question[] = Array.from({ length: 10 }, (_, i) => ({
+      id: i + 1,
+      category: quizConfig.category,
+      question_text: `Testfrage ${i + 1}`,
+      question_type: 'single_choice',
+      all_answers: ['Antwort A (richtig)', 'Antwort B (falsch)'],
+      correct_answers: ['Antwort A (richtig)'],
+    }));
+
+    const correctCount = didPass ? 9 : 4; // 90% (bestanden) bzw. 40% (nicht bestanden)
+    const fakeAnswers: UserAnswers = {};
+    fakeQuestions.forEach((q, i) => {
+      fakeAnswers[q.id] = [i < correctCount ? 'Antwort A (richtig)' : 'Antwort B (falsch)'];
+    });
+
+    setUserDetails({
+      firstName: 'Max',
+      lastName: 'Mustermann (Test)',
+      email: 'test@dogs-life-academy.com',
+      dogName: isTrainer ? '' : 'Bello (Test)',
+      chipNumber: isTrainer ? '' : '276000000000000',
+    });
+    setQuizConfig(prev => ({ ...prev, count: 60 })); // enables the certificate check (only shown at 60 questions)
+    setQuizQuestions(fakeQuestions);
+    setUserAnswers(fakeAnswers);
+    setCurrentView('RESULT');
+  };
+
   const finishQuiz = async (answers: UserAnswers) => {
     setUserAnswers(answers);
     setCurrentView('RESULT');
@@ -301,6 +333,25 @@ function App() {
                       </svg>
                     ) : 'Quiz starten'}
                   </button>
+
+                  {/* DEV ONLY: Simulate passed/failed exam to preview the result screen & certificate. Remove after testing. */}
+                  <div className="mt-4 pt-4 border-t border-dashed border-gray-200">
+                    <p className="text-center text-[10px] font-bold uppercase tracking-wide text-gray-300 mb-2">Dev-Test: Zertifikat-Vorschau</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => simulateQuizResult(true)}
+                        className="flex-1 py-2 rounded-xl border-2 border-dashed border-green-300 text-green-600 text-xs font-bold hover:bg-green-50 transition-all"
+                      >
+                        🧪 Bestanden simulieren
+                      </button>
+                      <button
+                        onClick={() => simulateQuizResult(false)}
+                        className="flex-1 py-2 rounded-xl border-2 border-dashed border-red-300 text-red-500 text-xs font-bold hover:bg-red-50 transition-all"
+                      >
+                        🧪 Nicht bestanden simulieren
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -358,8 +409,8 @@ function App() {
                               firstName: introFirstName,
                               lastName: introLastName,
                               email: introEmail,
-                              dogName: introDogName,
-                              chipNumber: introChipNumber
+                              dogName: isTrainer ? '' : introDogName,
+                              chipNumber: isTrainer ? '' : introChipNumber
                           });
                       }}>
                           <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl mb-6 space-y-4">
@@ -378,16 +429,18 @@ function App() {
                                   <label className="block text-xs font-bold text-gray-600 mb-1">E-Mail-Adresse *</label>
                                   <input required type="email" value={introEmail} onChange={e => setIntroEmail(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 focus:border-[#482880] focus:ring-1 focus:ring-[#482880] outline-none" />
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                      <label className="block text-xs font-bold text-gray-600 mb-1">Name des Hundes *</label>
-                                      <input required type="text" value={introDogName} onChange={e => setIntroDogName(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 focus:border-[#482880] focus:ring-1 focus:ring-[#482880] outline-none" />
+                              {!isTrainer && (
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                          <label className="block text-xs font-bold text-gray-600 mb-1">Name des Hundes *</label>
+                                          <input required type="text" value={introDogName} onChange={e => setIntroDogName(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 focus:border-[#482880] focus:ring-1 focus:ring-[#482880] outline-none" />
+                                      </div>
+                                      <div>
+                                          <label className="block text-xs font-bold text-gray-600 mb-1">Chipnummer *</label>
+                                          <input required type="text" value={introChipNumber} onChange={e => setIntroChipNumber(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 focus:border-[#482880] focus:ring-1 focus:ring-[#482880] outline-none" />
+                                      </div>
                                   </div>
-                                  <div>
-                                      <label className="block text-xs font-bold text-gray-600 mb-1">Chipnummer *</label>
-                                      <input required type="text" value={introChipNumber} onChange={e => setIntroChipNumber(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 focus:border-[#482880] focus:ring-1 focus:ring-[#482880] outline-none" />
-                                  </div>
-                              </div>
+                              )}
                           </div>
 
                           <div className="flex justify-center">

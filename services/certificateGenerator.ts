@@ -174,7 +174,7 @@ export async function buildCertificatePdf(data: CertificateData): Promise<jsPDF>
   doc.text('erfolgreich abgelegt und bestanden.', contentX, y);
   y += 14;
 
-  if (data.dogName) {
+  if (!isTrainer && data.dogName) {
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(10.5);
     doc.setTextColor(...TEXT_MEDIUM);
