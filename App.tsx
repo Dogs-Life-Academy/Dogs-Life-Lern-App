@@ -23,6 +23,8 @@ function App() {
   const [introFirstName, setIntroFirstName] = useState('');
   const [introLastName, setIntroLastName] = useState('');
   const [introEmail, setIntroEmail] = useState('');
+  const [introDogName, setIntroDogName] = useState('');
+  const [introChipNumber, setIntroChipNumber] = useState('');
 
   // Navigation Helpers
   const goHome = () => {
@@ -32,6 +34,11 @@ function App() {
     setPasswordError(false);
     setShowIntroModal(false);
     setUserDetails(null);
+    setIntroFirstName('');
+    setIntroLastName('');
+    setIntroEmail('');
+    setIntroDogName('');
+    setIntroChipNumber('');
   };
 
   const handleRoleSelect = (selectedRole: UserRole) => {
@@ -110,6 +117,8 @@ function App() {
         first_name: userDetails.firstName,
         last_name: userDetails.lastName,
         email: userDetails.email,
+        dog_name: userDetails.dogName,
+        chip_number: userDetails.chipNumber,
         category: quizConfig.category,
         score_percentage: score,
         correct_count: correct,
@@ -311,6 +320,7 @@ function App() {
                               : "https://pruefung.hs-bw.com/wp-content/uploads/2022/11/KoAla-Test.png"}
                           alt="Prüfung Logo" 
                           className="max-h-24 w-auto object-contain"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
                       </div>
                       
@@ -347,7 +357,9 @@ function App() {
                           confirmStartQuiz({
                               firstName: introFirstName,
                               lastName: introLastName,
-                              email: introEmail
+                              email: introEmail,
+                              dogName: introDogName,
+                              chipNumber: introChipNumber
                           });
                       }}>
                           <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl mb-6 space-y-4">
@@ -365,6 +377,16 @@ function App() {
                               <div>
                                   <label className="block text-xs font-bold text-gray-600 mb-1">E-Mail-Adresse *</label>
                                   <input required type="email" value={introEmail} onChange={e => setIntroEmail(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 focus:border-[#482880] focus:ring-1 focus:ring-[#482880] outline-none" />
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                      <label className="block text-xs font-bold text-gray-600 mb-1">Name des Hundes *</label>
+                                      <input required type="text" value={introDogName} onChange={e => setIntroDogName(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 focus:border-[#482880] focus:ring-1 focus:ring-[#482880] outline-none" />
+                                  </div>
+                                  <div>
+                                      <label className="block text-xs font-bold text-gray-600 mb-1">Chipnummer *</label>
+                                      <input required type="text" value={introChipNumber} onChange={e => setIntroChipNumber(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 focus:border-[#482880] focus:ring-1 focus:ring-[#482880] outline-none" />
+                                  </div>
                               </div>
                           </div>
 

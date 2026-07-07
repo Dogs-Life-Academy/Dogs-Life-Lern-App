@@ -14,6 +14,8 @@ export interface UserDetails {
   firstName: string;
   lastName: string;
   email: string;
+  dogName: string;
+  chipNumber: string;
 }
 
 export interface QuizResultRecord {
@@ -21,6 +23,8 @@ export interface QuizResultRecord {
   first_name: string;
   last_name: string;
   email: string;
+  dog_name?: string;
+  chip_number?: string;
   category: string;
   score_percentage: number;
   correct_count: number;
