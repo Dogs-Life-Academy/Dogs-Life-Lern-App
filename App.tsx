@@ -316,8 +316,8 @@ function App() {
                       <div className="flex justify-center mb-6">
                         <img 
                           src={isTrainer 
-                              ? "https://pruefung.hs-bw.com/wp-content/uploads/2025/05/D.O.Q.-Test.jpg" 
-                              : "https://pruefung.hs-bw.com/wp-content/uploads/2022/11/KoAla-Test.png"}
+                              ? "/assets/doq-test-logo.jpg" 
+                              : "/assets/koala-test-logo.png"}
                           alt="Prüfung Logo" 
                           className="max-h-24 w-auto object-contain"
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
