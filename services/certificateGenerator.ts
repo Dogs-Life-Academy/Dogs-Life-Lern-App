@@ -85,6 +85,103 @@ const TEXT_DARK: [number, number, number] = [55, 55, 55];
 const TEXT_MEDIUM: [number, number, number] = [100, 100, 100];
 const TEXT_FOOTER: [number, number, number] = [150, 150, 150];
 
+// ---------------------------------------------------------------------------
+// Dynamic field layouts
+//
+// Each certificate type can define where certain dynamic fields are placed on
+// the page. The positions are given in millimetres (mm) relative to the
+// top-left corner of the A4 page (portrait orientation). The rendering code
+// iterates over these layouts and draws the appropriate text at the specified
+// coordinates with the provided font settings. Adjust these values to fine
+// tune the appearance of your certificates without touching the drawing logic.
+
+interface LayoutElement {
+  // Supported placeholders:
+  //  - 'NAME' : full name of the participant
+  //  - 'DOG'  : dog's name (will be prefixed with 'Hund ')
+  //  - 'CHIP' : chip number (will be prefixed with 'Chip-Nr. ')
+  //  - 'DATE' : location and date string (e.g. 'Ascha, den 07.07.2026')
+  placeholder: 'NAME' | 'DOG' | 'CHIP' | 'DATE';
+  x: number;
+  y: number;
+  fontSize: number;
+  fontFamily: string;
+  fontStyle: 'normal' | 'bold' | 'italic';
+  color?: [number, number, number];
+  align?: 'left' | 'center' | 'right';
+}
+
+// Layout for the trainer certificate. Only the participant's name and the date
+// (with location) are drawn for this category.
+const TRAINER_LAYOUT: LayoutElement[] = [
+  {
+    placeholder: 'NAME',
+    x: 46,
+    y: 58,
+    fontSize: 22,
+    fontFamily: 'times',
+    fontStyle: 'normal',
+    color: TEXT_MEDIUM,
+    align: 'left',
+  },
+  {
+    placeholder: 'DATE',
+    x: 46,
+    y: 228,
+    fontSize: 11,
+    fontFamily: 'helvetica',
+    fontStyle: 'normal',
+    color: TEXT_DARK,
+    align: 'left',
+  },
+];
+
+// Layout for KoAla and other certificates. In addition to the name and date,
+// the dog's name and chip number (if provided) are rendered. You can freely
+// adjust the y positions and font sizes to suit your desired design.
+const KOALA_LAYOUT: LayoutElement[] = [
+  {
+    placeholder: 'NAME',
+    x: 46,
+    y: 58,
+    fontSize: 22,
+    fontFamily: 'times',
+    fontStyle: 'normal',
+    color: TEXT_MEDIUM,
+    align: 'left',
+  },
+  {
+    placeholder: 'DOG',
+    x: 46,
+    y: 130,
+    fontSize: 11,
+    fontFamily: 'helvetica',
+    fontStyle: 'italic',
+    color: TEXT_MEDIUM,
+    align: 'left',
+  },
+  {
+    placeholder: 'CHIP',
+    x: 46,
+    y: 138,
+    fontSize: 11,
+    fontFamily: 'helvetica',
+    fontStyle: 'italic',
+    color: TEXT_MEDIUM,
+    align: 'left',
+  },
+  {
+    placeholder: 'DATE',
+    x: 46,
+    y: 228,
+    fontSize: 11,
+    fontFamily: 'helvetica',
+    fontStyle: 'normal',
+    color: TEXT_DARK,
+    align: 'left',
+  },
+];
+
 function formatDateDE(d: Date): string {
   return d.toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' });
 }
@@ -130,9 +227,7 @@ export async function buildCertificatePdf(data: CertificateData): Promise<jsPDF>
   doc.text('Zertifikat', contentX, 40);
 
   // --- Name ---
-  doc.setFontSize(22);
-  doc.setTextColor(...TEXT_MEDIUM);
-  doc.text(`${data.firstName} ${data.lastName}`, contentX, 58);
+  // The participant's name is now drawn via the dynamic layout below.
 
   // --- Intro line ---
   doc.setFont('helvetica', 'normal');
@@ -174,20 +269,42 @@ export async function buildCertificatePdf(data: CertificateData): Promise<jsPDF>
   doc.text('erfolgreich abgelegt und bestanden.', contentX, y);
   y += 14;
 
-  if (!isTrainer && data.dogName) {
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(10.5);
-    doc.setTextColor(...TEXT_MEDIUM);
-    const chipPart = data.chipNumber ? ` (Chip-Nr. ${data.chipNumber})` : '';
-    doc.text(`in Begleitung von Hund ${data.dogName}${chipPart}`, contentX, y);
-  }
+  // The dog and chip information will be drawn via the dynamic layout below.
 
   // --- Signature block ---
   const sigY = 228;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(11);
   doc.setTextColor(...TEXT_DARK);
-  doc.text(`${location}, den ${dateStr}`, contentX, sigY);
+  // Before drawing the signatures, output the dynamic fields (name, dog,
+  // chip, date) according to the selected layout. This allows you to reposition
+  // these fields without touching the PDF drawing logic.
+  {
+    const layout = isTrainer ? TRAINER_LAYOUT : KOALA_LAYOUT;
+    layout.forEach(el => {
+      let text = '';
+      switch (el.placeholder) {
+        case 'NAME':
+          text = `${data.firstName} ${data.lastName}`.trim();
+          break;
+        case 'DOG':
+          text = data.dogName ? `Hund ${data.dogName}` : '';
+          break;
+        case 'CHIP':
+          text = data.chipNumber ? `Chip-Nr. ${data.chipNumber}` : '';
+          break;
+        case 'DATE':
+          text = `${location}, den ${dateStr}`;
+          break;
+      }
+      if (!text) return;
+      doc.setFont(el.fontFamily, el.fontStyle);
+      doc.setFontSize(el.fontSize);
+      const [r, g, b] = el.color || TEXT_DARK;
+      doc.setTextColor(r, g, b);
+      doc.text(text, el.x, el.y, { align: el.align || 'left' });
+    });
+  }
 
   addImageFitted(doc, signature, contentX, sigY + 4, 34, 14, 'left');
   addImageFitted(doc, stamp, contentX + 40, sigY + 1, 28, 18, 'left');
