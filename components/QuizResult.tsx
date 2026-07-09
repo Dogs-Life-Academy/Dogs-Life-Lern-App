@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Question, UserAnswers, UserDetails } from '../types.ts';
 import { downloadCertificate } from '../services/certificateGenerator.ts';
+import { fetchCertificateSettings } from '../services/supabaseClient.ts';
 
 interface QuizResultProps {
   questions: Question[];
@@ -43,6 +44,7 @@ const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onResta
     setGeneratingCert(true);
     setCertError(false);
     try {
+      const settings = await fetchCertificateSettings();
       await downloadCertificate({
         firstName: userDetails.firstName,
         lastName: userDetails.lastName,
@@ -50,7 +52,7 @@ const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onResta
         chipNumber: userDetails.chipNumber,
         category,
         scorePercentage: percentage,
-      });
+      }, settings || undefined);
     } catch (err) {
       console.error('Fehler beim Erstellen des Zertifikats:', err);
       setCertError(true);

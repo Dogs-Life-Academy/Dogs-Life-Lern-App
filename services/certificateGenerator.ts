@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf';
+import { CertificateSettings } from '../types.ts';
 
 const ASSET_BASE = '/assets/certificates';
 
@@ -10,6 +11,43 @@ const ASSET_PATHS = {
   euBadge: `${ASSET_BASE}/eu-qualified-badge.png`,
   eurozertSeal: `${ASSET_BASE}/eurozert-seal.png`,
   koalaSeal: `${ASSET_BASE}/koala-pruefer-seal.png`,
+};
+
+export const DEFAULT_CERTIFICATE_SETTINGS: CertificateSettings = {
+  sidebarColor: '#909D8C',
+  titleColor: '#373737',
+  nameColor: '#646464',
+  bodyColor: '#373737',
+  footerColor: '#969696',
+  watermarkColor: '#FFFFFF',
+
+  fontFamily: 'times',
+  titleFontSize: 40,
+  nameFontSize: 22,
+  headingFontSize: 24,
+  bodyFontSize: 11,
+  footerFontSize: 7.5,
+
+  sidebarWidthMm: 32,
+  sealSizeMm: 20,
+  showWatermarkText: true,
+
+  watermarkText: 'Hundezentrum Bayerischer Wald',
+  titleText: 'Zertifikat',
+  introText: 'hat am {datum} an der',
+  headingLine1: 'Theorie-Prüfung',
+  headingLine2Trainer: 'zum/zur Hundetrainer/in',
+  headingLine2Koala: 'des KoAla-Test\u00AE',
+  legalLineTrainer: 'angelehnt an §11 Abs. 1 Satz 1 Nummer 8 Buchstabe f TierSchG teilgenommen',
+  participationLineKoala: 'teilgenommen',
+  resultLine: 'und die Prüfung mit einem Ergebnis von {ergebnis}% am {datum}',
+  passedLine: 'erfolgreich abgelegt und bestanden.',
+  dogLineTemplate: 'in Begleitung von Hund {hundename} (Chip-Nr. {chipnummer})',
+  locationDefault: 'Ascha',
+  signatureLabel: 'Sachverständiger | Christian Huber',
+  veranstalterLabel: 'Veranstalter | Hundeschule Bayerischer Wald',
+  footerText:
+    "Dog\u00B4s Life Academy - www.dogs-life-academy.com  |  Hundeschule Bayerischer Wald - www.hs-bw.com  |  Hundezentrum Bayerischer Wald - www.hundezentrum-bayerischer-wald.de",
 };
 
 interface LoadedImage {
@@ -49,7 +87,6 @@ function loadImage(src: string): Promise<LoadedImage> {
   return imageCache[src];
 }
 
-// Draws an image constrained to a max box, keeping aspect ratio.
 function addImageFitted(
   doc: jsPDF,
   img: LoadedImage,
@@ -69,6 +106,22 @@ function addImageFitted(
   return { w, h };
 }
 
+function hexToRgb(hex: string): [number, number, number] {
+  const clean = hex.replace('#', '');
+  const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean;
+  const num = parseInt(full, 16);
+  if (isNaN(num)) return [0, 0, 0];
+  return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+}
+
+function fillPlaceholders(template: string, vars: Record<string, string>): string {
+  let result = template;
+  Object.entries(vars).forEach(([key, value]) => {
+    result = result.split(`{${key}}`).join(value);
+  });
+  return result;
+}
+
 export interface CertificateData {
   firstName: string;
   lastName: string;
@@ -80,113 +133,15 @@ export interface CertificateData {
   location?: string;
 }
 
-const SIDEBAR_COLOR: [number, number, number] = [144, 157, 140];
-const TEXT_DARK: [number, number, number] = [55, 55, 55];
-const TEXT_MEDIUM: [number, number, number] = [100, 100, 100];
-const TEXT_FOOTER: [number, number, number] = [150, 150, 150];
-
-// ---------------------------------------------------------------------------
-// Dynamic field layouts
-//
-// Each certificate type can define where certain dynamic fields are placed on
-// the page. The positions are given in millimetres (mm) relative to the
-// top-left corner of the A4 page (portrait orientation). The rendering code
-// iterates over these layouts and draws the appropriate text at the specified
-// coordinates with the provided font settings. Adjust these values to fine
-// tune the appearance of your certificates without touching the drawing logic.
-
-interface LayoutElement {
-  // Supported placeholders:
-  //  - 'NAME' : full name of the participant
-  //  - 'DOG'  : dog's name (will be prefixed with 'Hund ')
-  //  - 'CHIP' : chip number (will be prefixed with 'Chip-Nr. ')
-  //  - 'DATE' : location and date string (e.g. 'Ascha, den 07.07.2026')
-  placeholder: 'NAME' | 'DOG' | 'CHIP' | 'DATE';
-  x: number;
-  y: number;
-  fontSize: number;
-  fontFamily: string;
-  fontStyle: 'normal' | 'bold' | 'italic';
-  color?: [number, number, number];
-  align?: 'left' | 'center' | 'right';
-}
-
-// Layout for the trainer certificate. Only the participant's name and the date
-// (with location) are drawn for this category.
-const TRAINER_LAYOUT: LayoutElement[] = [
-  {
-    placeholder: 'NAME',
-    x: 46,
-    y: 58,
-    fontSize: 22,
-    fontFamily: 'times',
-    fontStyle: 'normal',
-    color: TEXT_MEDIUM,
-    align: 'left',
-  },
-  {
-    placeholder: 'DATE',
-    x: 46,
-    y: 228,
-    fontSize: 11,
-    fontFamily: 'helvetica',
-    fontStyle: 'normal',
-    color: TEXT_DARK,
-    align: 'left',
-  },
-];
-
-// Layout for KoAla and other certificates. In addition to the name and date,
-// the dog's name and chip number (if provided) are rendered. You can freely
-// adjust the y positions and font sizes to suit your desired design.
-const KOALA_LAYOUT: LayoutElement[] = [
-  {
-    placeholder: 'NAME',
-    x: 46,
-    y: 58,
-    fontSize: 22,
-    fontFamily: 'times',
-    fontStyle: 'normal',
-    color: TEXT_MEDIUM,
-    align: 'left',
-  },
-  {
-    placeholder: 'DOG',
-    x: 46,
-    y: 130,
-    fontSize: 11,
-    fontFamily: 'helvetica',
-    fontStyle: 'italic',
-    color: TEXT_MEDIUM,
-    align: 'left',
-  },
-  {
-    placeholder: 'CHIP',
-    x: 46,
-    y: 138,
-    fontSize: 11,
-    fontFamily: 'helvetica',
-    fontStyle: 'italic',
-    color: TEXT_MEDIUM,
-    align: 'left',
-  },
-  {
-    placeholder: 'DATE',
-    x: 46,
-    y: 228,
-    fontSize: 11,
-    fontFamily: 'helvetica',
-    fontStyle: 'normal',
-    color: TEXT_DARK,
-    align: 'left',
-  },
-];
-
 function formatDateDE(d: Date): string {
   return d.toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-export async function buildCertificatePdf(data: CertificateData): Promise<jsPDF> {
+export async function buildCertificatePdf(
+  data: CertificateData,
+  settingsOverride?: Partial<CertificateSettings>
+): Promise<jsPDF> {
+  const settings: CertificateSettings = { ...DEFAULT_CERTIFICATE_SETTINGS, ...settingsOverride };
   const isTrainer = data.category === 'Trainerprüfung';
 
   const [shield, hundeschuleLogo, signature, stamp, euBadge, eurozertSeal, koalaSeal] = await Promise.all([
@@ -202,132 +157,114 @@ export async function buildCertificatePdf(data: CertificateData): Promise<jsPDF>
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
   const pageW = 210;
   const pageH = 297;
-  const sidebarW = 32;
+  const sidebarW = settings.sidebarWidthMm;
   const contentX = sidebarW + 14;
   const rightMargin = 18;
   const contentW = pageW - contentX - rightMargin;
 
-  // --- Sidebar ---
-  doc.setFillColor(...SIDEBAR_COLOR);
-  doc.rect(0, 0, sidebarW, pageH, 'F');
-  addImageFitted(doc, shield, sidebarW / 2, 12, 18, 18, 'center');
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(13);
-  doc.text('Hundezentrum Bayerischer Wald', sidebarW / 2 + 3, pageH / 2, { angle: 90, align: 'center' });
-
   const date = data.certifiedAt ? new Date(data.certifiedAt) : new Date();
   const dateStr = formatDateDE(date);
-  const location = data.location || 'Ascha';
+  const location = data.location || settings.locationDefault;
+
+  const vars = {
+    name: `${data.firstName} ${data.lastName}`,
+    datum: dateStr,
+    ergebnis: String(data.scorePercentage),
+    hundename: data.dogName || '',
+    chipnummer: data.chipNumber || '',
+  };
+
+  // --- Sidebar ---
+  doc.setFillColor(...hexToRgb(settings.sidebarColor));
+  doc.rect(0, 0, sidebarW, pageH, 'F');
+  addImageFitted(doc, shield, sidebarW / 2, 12, 18, 18, 'center');
+  if (settings.showWatermarkText) {
+    doc.setTextColor(...hexToRgb(settings.watermarkColor));
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(13);
+    doc.text(settings.watermarkText, sidebarW / 2 + 3, pageH / 2, { angle: 90, align: 'center' });
+  }
 
   // --- Title ---
-  doc.setTextColor(...TEXT_DARK);
-  doc.setFont('times', 'normal');
-  doc.setFontSize(40);
-  doc.text('Zertifikat', contentX, 40);
+  doc.setTextColor(...hexToRgb(settings.titleColor));
+  doc.setFont(settings.fontFamily, 'normal');
+  doc.setFontSize(settings.titleFontSize);
+  doc.text(settings.titleText, contentX, 40);
 
   // --- Name ---
-  // The participant's name is now drawn via the dynamic layout below.
+  doc.setFontSize(settings.nameFontSize);
+  doc.setTextColor(...hexToRgb(settings.nameColor));
+  doc.text(vars.name, contentX, 58);
 
   // --- Intro line ---
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(12);
-  doc.setTextColor(...TEXT_DARK);
-  doc.text(`hat am ${dateStr} an der`, contentX, 78);
+  doc.setFontSize(settings.bodyFontSize);
+  doc.setTextColor(...hexToRgb(settings.bodyColor));
+  doc.text(fillPlaceholders(settings.introText, vars), contentX, 78);
 
   // --- Category heading ---
-  doc.setFont('times', 'normal');
-  doc.setFontSize(24);
+  doc.setFont(settings.fontFamily, 'normal');
+  doc.setFontSize(settings.headingFontSize);
   let headY = 92;
-  doc.text('Theorie-Prüfung', contentX, headY);
+  doc.text(settings.headingLine1, contentX, headY);
   headY += 11;
-  doc.text(isTrainer ? 'zum/zur Hundetrainer/in' : 'des KoAla-Test\u00AE', contentX, headY);
+  doc.text(isTrainer ? settings.headingLine2Trainer : settings.headingLine2Koala, contentX, headY);
 
   let y = headY + 16;
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(11);
-  doc.setTextColor(...TEXT_DARK);
+  doc.setFontSize(settings.bodyFontSize);
+  doc.setTextColor(...hexToRgb(settings.bodyColor));
   if (isTrainer) {
-    const legalLine = doc.splitTextToSize(
-      'angelehnt an §11 Abs. 1 Satz 1 Nummer 8 Buchstabe f TierSchG teilgenommen',
-      contentW
-    );
+    const legalLine = doc.splitTextToSize(settings.legalLineTrainer, contentW);
     doc.text(legalLine, contentX, y);
     y += legalLine.length * 6 + 4;
   } else {
-    doc.text('teilgenommen', contentX, y);
+    doc.text(settings.participationLineKoala, contentX, y);
     y += 10;
   }
 
-  const resultLine = doc.splitTextToSize(
-    `und die Prüfung mit einem Ergebnis von ${data.scorePercentage}% am ${dateStr}`,
-    contentW
-  );
+  const resultLine = doc.splitTextToSize(fillPlaceholders(settings.resultLine, vars), contentW);
   doc.text(resultLine, contentX, y);
   y += resultLine.length * 6 + 2;
-  doc.text('erfolgreich abgelegt und bestanden.', contentX, y);
+  doc.text(settings.passedLine, contentX, y);
   y += 14;
 
-  // The dog and chip information will be drawn via the dynamic layout below.
+  if (!isTrainer && data.dogName) {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(settings.bodyFontSize - 0.5);
+    doc.setTextColor(...hexToRgb(settings.bodyColor));
+    doc.text(fillPlaceholders(settings.dogLineTemplate, vars), contentX, y);
+  }
 
   // --- Signature block ---
   const sigY = 228;
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(11);
-  doc.setTextColor(...TEXT_DARK);
-  // Before drawing the signatures, output the dynamic fields (name, dog,
-  // chip, date) according to the selected layout. This allows you to reposition
-  // these fields without touching the PDF drawing logic.
-  {
-    const layout = isTrainer ? TRAINER_LAYOUT : KOALA_LAYOUT;
-    layout.forEach(el => {
-      let text = '';
-      switch (el.placeholder) {
-        case 'NAME':
-          text = `${data.firstName} ${data.lastName}`.trim();
-          break;
-        case 'DOG':
-          text = data.dogName ? `Hund ${data.dogName}` : '';
-          break;
-        case 'CHIP':
-          text = data.chipNumber ? `Chip-Nr. ${data.chipNumber}` : '';
-          break;
-        case 'DATE':
-          text = `${location}, den ${dateStr}`;
-          break;
-      }
-      if (!text) return;
-      doc.setFont(el.fontFamily, el.fontStyle);
-      doc.setFontSize(el.fontSize);
-      const [r, g, b] = el.color || TEXT_DARK;
-      doc.setTextColor(r, g, b);
-      doc.text(text, el.x, el.y, { align: el.align || 'left' });
-    });
-  }
+  doc.setFontSize(settings.bodyFontSize);
+  doc.setTextColor(...hexToRgb(settings.bodyColor));
+  doc.text(`${location}, den ${dateStr}`, contentX, sigY);
 
   addImageFitted(doc, signature, contentX, sigY + 4, 34, 14, 'left');
   addImageFitted(doc, stamp, contentX + 40, sigY + 1, 28, 18, 'left');
   addImageFitted(doc, hundeschuleLogo, contentX + 76, sigY + 1, 20, 20, 'left');
 
   doc.setFontSize(8.5);
-  doc.setTextColor(...TEXT_MEDIUM);
-  doc.text('Sachverständiger | Christian Huber', contentX, sigY + 23);
-  doc.text('Veranstalter | Hundeschule Bayerischer Wald', contentX + 40, sigY + 23);
+  doc.setTextColor(...hexToRgb(settings.footerColor));
+  doc.text(settings.signatureLabel, contentX, sigY + 23);
+  doc.text(settings.veranstalterLabel, contentX + 40, sigY + 23);
 
   // --- Seals bottom-right ---
-  const sealY = pageH - 42;
+  const sealSize = settings.sealSizeMm;
+  const sealY = pageH - sealSize - 22;
   const sealRightX = pageW - rightMargin;
-  addImageFitted(doc, euBadge, sealRightX, sealY, 20, 20, 'right');
+  addImageFitted(doc, euBadge, sealRightX, sealY, sealSize, sealSize, 'right');
   const secondSeal = isTrainer ? eurozertSeal : koalaSeal;
-  addImageFitted(doc, secondSeal, sealRightX - 24, sealY, 20, 20, 'right');
+  addImageFitted(doc, secondSeal, sealRightX - sealSize - 4, sealY, sealSize, sealSize, 'right');
 
   // --- Footer ---
-  doc.setFontSize(7.5);
-  doc.setTextColor(...TEXT_FOOTER);
-  const footer =
-    "Dog\u00B4s Life Academy - www.dogs-life-academy.com  |  Hundeschule Bayerischer Wald - www.hs-bw.com  |  Hundezentrum Bayerischer Wald - www.hundezentrum-bayerischer-wald.de";
-  doc.text(doc.splitTextToSize(footer, contentW + sidebarW - contentX + 5), contentX, pageH - 8);
+  doc.setFontSize(settings.footerFontSize);
+  doc.setTextColor(...hexToRgb(settings.footerColor));
+  doc.text(doc.splitTextToSize(settings.footerText, contentW + sidebarW - contentX + 5), contentX, pageH - 8);
 
   return doc;
 }
@@ -338,7 +275,10 @@ function buildFilename(data: CertificateData): string {
   return `Zertifikat_${cat}_${safe}.pdf`;
 }
 
-export async function downloadCertificate(data: CertificateData): Promise<void> {
-  const doc = await buildCertificatePdf(data);
+export async function downloadCertificate(
+  data: CertificateData,
+  settingsOverride?: Partial<CertificateSettings>
+): Promise<void> {
+  const doc = await buildCertificatePdf(data, settingsOverride);
   doc.save(buildFilename(data));
 }

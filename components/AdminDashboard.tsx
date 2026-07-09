@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchQuestions, deleteQuestion, upsertQuestion, bulkInsertQuestions, fetchQuizResults, deleteQuizResult } from '../services/supabaseClient.ts';
+import { fetchQuestions, deleteQuestion, upsertQuestion, bulkInsertQuestions, fetchQuizResults, deleteQuizResult, fetchCertificateSettings } from '../services/supabaseClient.ts';
 import { Question, QuestionType, CsvRow, QuizResultRecord } from '../types.ts';
 import { jsPDF } from "jspdf";
 import { downloadCertificate } from '../services/certificateGenerator.ts';
+import CertificateDesigner from './CertificateDesigner.tsx';
 
 interface AdminDashboardProps {
   onBack: () => void;
@@ -15,7 +16,7 @@ const CATEGORY_MAP: Record<string, string> = {
 };
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
-  const [activeTab, setActiveTab] = useState<'QUESTIONS' | 'RESULTS'>('QUESTIONS');
+  const [activeTab, setActiveTab] = useState<'QUESTIONS' | 'RESULTS' | 'CERTIFICATE_DESIGN'>('QUESTIONS');
   
   const [questions, setQuestions] = useState<Question[]>([]);
   const [results, setResults] = useState<QuizResultRecord[]>([]);
@@ -111,6 +112,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     if (r.id === undefined || r.id === null) return;
     setGeneratingCertId(r.id);
     try {
+      const settings = await fetchCertificateSettings();
       await downloadCertificate({
         firstName: r.first_name,
         lastName: r.last_name,
@@ -119,7 +121,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
         category: r.category,
         scorePercentage: r.score_percentage,
         certifiedAt: r.created_at,
-      });
+      }, settings || undefined);
     } catch (err) {
       console.error('Fehler beim Erstellen des Zertifikats:', err);
       alert('Zertifikat konnte nicht erstellt werden.');
@@ -412,7 +414,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
           >
             Teilnehmer-Ergebnisse
           </button>
+          <button 
+            onClick={() => setActiveTab('CERTIFICATE_DESIGN')}
+            className={`py-3 px-6 font-bold text-lg border-b-4 transition-colors ${activeTab === 'CERTIFICATE_DESIGN' ? 'border-[#6C5CE7] text-[#6C5CE7]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            Zertifikat-Design
+          </button>
         </div>
+
+        {activeTab === 'CERTIFICATE_DESIGN' && (
+          <CertificateDesigner />
+        )}
 
         {activeTab === 'QUESTIONS' && (
           <>

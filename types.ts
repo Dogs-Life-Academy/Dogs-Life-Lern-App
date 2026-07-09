@@ -33,6 +33,54 @@ export interface QuizResultRecord {
   created_at?: string;
 }
 
+export type CertificateFontFamily = 'times' | 'helvetica' | 'courier';
+
+export interface CertificateSettings {
+  // Farben (Hex)
+  sidebarColor: string;
+  titleColor: string;
+  nameColor: string;
+  bodyColor: string;
+  footerColor: string;
+  watermarkColor: string;
+
+  // Schrift
+  fontFamily: CertificateFontFamily;
+  titleFontSize: number;
+  nameFontSize: number;
+  headingFontSize: number;
+  bodyFontSize: number;
+  footerFontSize: number;
+
+  // Layout
+  sidebarWidthMm: number;
+  sealSizeMm: number;
+  showWatermarkText: boolean;
+
+  // Texte (Platzhalter: {name} {datum} {ergebnis} {hundename} {chipnummer})
+  watermarkText: string;
+  titleText: string;
+  introText: string;
+  headingLine1: string;
+  headingLine2Trainer: string;
+  headingLine2Koala: string;
+  legalLineTrainer: string;
+  participationLineKoala: string;
+  resultLine: string;
+  passedLine: string;
+  dogLineTemplate: string;
+  locationDefault: string;
+  signatureLabel: string;
+  veranstalterLabel: string;
+  footerText: string;
+}
+
+export interface CertificateSettingsRecord {
+  id: number;
+  settings: CertificateSettings;
+  updated_at?: string;
+}
+
 export type View = 'START' | 'SELECTION' | 'GAME' | 'RESULT' | 'ADMIN_LOGIN' | 'ADMIN_DASHBOARD';
 
 export type UserRole = 'PARTICIPANT' | 'ADMIN' | null;
