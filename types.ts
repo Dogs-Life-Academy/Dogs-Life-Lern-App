@@ -35,6 +35,29 @@ export interface QuizResultRecord {
 
 export type CertificateFontFamily = 'times' | 'helvetica' | 'courier';
 
+export interface ElementPosition {
+  x: number; // mm from left edge of the page
+  y: number; // mm from top edge of the page
+}
+
+export type CertificateElementKey =
+  | 'watermark'
+  | 'title'
+  | 'name'
+  | 'intro'
+  | 'heading1'
+  | 'heading2'
+  | 'legalOrParticipation'
+  | 'result'
+  | 'passed'
+  | 'dogLine'
+  | 'signatureDate'
+  | 'signatureLabel'
+  | 'veranstalterLabel'
+  | 'footer';
+
+export type CertificatePositions = Record<CertificateElementKey, ElementPosition>;
+
 export interface CertificateSettings {
   // Farben (Hex)
   sidebarColor: string;
@@ -51,11 +74,15 @@ export interface CertificateSettings {
   headingFontSize: number;
   bodyFontSize: number;
   footerFontSize: number;
+  watermarkFontSize: number;
 
   // Layout
   sidebarWidthMm: number;
   sealSizeMm: number;
   showWatermarkText: boolean;
+
+  // Freie Positionierung der Textfelder (mm, per Drag & Drop im Editor gesetzt)
+  positions: CertificatePositions;
 
   // Texte (Platzhalter: {name} {datum} {ergebnis} {hundename} {chipnummer})
   watermarkText: string;
