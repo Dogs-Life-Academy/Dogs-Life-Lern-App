@@ -11,9 +11,10 @@ interface QuizResultProps {
   userDetails?: UserDetails | null;
   category?: string;
   questionCount?: number;
+  timedOut?: boolean;
 }
 
-const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onRestart, onHome, userDetails, category, questionCount }) => {
+const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onRestart, onHome, userDetails, category, questionCount, timedOut = false }) => {
   const [generatingCert, setGeneratingCert] = useState(false);
   const [certError, setCertError] = useState(false);
   // Logic to calculate score
@@ -35,7 +36,14 @@ const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onResta
   });
 
   const percentage = Math.round((correctCount / questions.length) * 100);
-  const passed = percentage >= 80;
+  // A timeout always counts as "nicht bestanden", regardless of the score reached so far.
+  const passed = !timedOut && percentage >= 80;
+
+  const resultImage = timedOut
+    ? '/assets/results/zeit-abgelaufen.jpg'
+    : passed
+      ? '/assets/results/bestanden.jpg'
+      : '/assets/results/nicht-bestanden.jpg';
 
   const canShowCertificate = passed && questionCount === 60 && !!userDetails && !!category;
 
@@ -66,6 +74,9 @@ const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onResta
         
         {/* 1. Header Area (Score) - Fixed */}
         <div className="flex-none bg-[#1e1f26] p-4 pb-0 z-10 w-full max-w-md mx-auto">
+             <div className="rounded-2xl overflow-hidden shadow-lg mb-3 h-36">
+                <img src={resultImage} alt="" className="w-full h-full object-cover" />
+             </div>
              <div className="bg-white rounded-2xl p-4 text-center shadow-lg relative overflow-hidden mb-4">
                  <div className={`absolute top-0 left-0 w-full h-20 ${passed ? 'bg-[#2ecc71]' : 'bg-[#e17055]'} opacity-20`}></div>
                  
@@ -78,7 +89,7 @@ const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onResta
                         )}
                     </div>
                     <h1 className="text-xl font-extrabold text-gray-800 leading-none">
-                        {passed ? 'Bestanden!' : 'Nicht bestanden'}
+                        {timedOut ? 'Zeit abgelaufen' : passed ? 'Bestanden!' : 'Nicht bestanden'}
                     </h1>
                     <div className="text-3xl font-black text-[#6C5CE7] mt-1">
                         {percentage}%

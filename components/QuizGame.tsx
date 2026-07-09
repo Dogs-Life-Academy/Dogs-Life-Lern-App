@@ -4,7 +4,7 @@ import { Question, UserAnswers } from '../types.ts';
 
 interface QuizGameProps {
   questions: Question[];
-  onFinish: (answers: UserAnswers) => void;
+  onFinish: (answers: UserAnswers, timedOut?: boolean) => void;
   onExit: () => void;
   timeLimit?: number; // Time limit in seconds (0 for no limit)
 }
@@ -31,7 +31,7 @@ const QuizGame: React.FC<QuizGameProps> = ({ questions, onFinish, onExit, timeLi
         if (prev <= 1) {
           clearInterval(timerId);
           // Time is up, finish quiz automatically
-          onFinish(answers); 
+          onFinish(answers, true);
           return 0;
         }
         return prev - 1;
@@ -81,7 +81,7 @@ const QuizGame: React.FC<QuizGameProps> = ({ questions, onFinish, onExit, timeLi
   };
 
   const confirmFinish = () => {
-    onFinish(answers);
+    onFinish(answers, false);
   };
 
   if (!currentQuestion) return <div>Loading...</div>;

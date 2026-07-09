@@ -18,6 +18,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   
   const [userAnswers, setUserAnswers] = useState<UserAnswers>({});
+  const [quizTimedOut, setQuizTimedOut] = useState(false);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [showIntroModal, setShowIntroModal] = useState(false);
   const [introFirstName, setIntroFirstName] = useState('');
@@ -39,6 +40,7 @@ function App() {
     setIntroEmail('');
     setIntroDogName('');
     setIntroChipNumber('');
+    setQuizTimedOut(false);
   };
 
   const handleRoleSelect = (selectedRole: UserRole) => {
@@ -78,6 +80,7 @@ function App() {
         setShowIntroModal(true);
         setLoading(false);
       } else {
+        setQuizTimedOut(false);
         setCurrentView('GAME');
         setLoading(false);
       }
@@ -92,43 +95,13 @@ function App() {
   const confirmStartQuiz = (details: UserDetails) => {
     setUserDetails(details);
     setShowIntroModal(false);
+    setQuizTimedOut(false);
     setCurrentView('GAME');
   };
 
-  // --- DEV ONLY: simulate a passed/failed 60-question exam to preview the result screen & certificate ---
-  // TODO: remove this once the certificate design is finalized.
-  const simulateQuizResult = (didPass: boolean) => {
-    const isTrainer = quizConfig.category === 'Trainerprüfung';
-    const fakeQuestions: Question[] = Array.from({ length: 10 }, (_, i) => ({
-      id: i + 1,
-      category: quizConfig.category,
-      question_text: `Testfrage ${i + 1}`,
-      question_type: 'single_choice',
-      all_answers: ['Antwort A (richtig)', 'Antwort B (falsch)'],
-      correct_answers: ['Antwort A (richtig)'],
-    }));
-
-    const correctCount = didPass ? 9 : 4; // 90% (bestanden) bzw. 40% (nicht bestanden)
-    const fakeAnswers: UserAnswers = {};
-    fakeQuestions.forEach((q, i) => {
-      fakeAnswers[q.id] = [i < correctCount ? 'Antwort A (richtig)' : 'Antwort B (falsch)'];
-    });
-
-    setUserDetails({
-      firstName: 'Max',
-      lastName: 'Mustermann (Test)',
-      email: 'test@dogs-life-academy.com',
-      dogName: isTrainer ? '' : 'Bello (Test)',
-      chipNumber: isTrainer ? '' : '276000000000000',
-    });
-    setQuizConfig(prev => ({ ...prev, count: 60 })); // enables the certificate check (only shown at 60 questions)
-    setQuizQuestions(fakeQuestions);
-    setUserAnswers(fakeAnswers);
-    setCurrentView('RESULT');
-  };
-
-  const finishQuiz = async (answers: UserAnswers) => {
+  const finishQuiz = async (answers: UserAnswers, timedOut: boolean = false) => {
     setUserAnswers(answers);
+    setQuizTimedOut(timedOut);
     setCurrentView('RESULT');
 
     if (userDetails && quizConfig.count === 60) {
@@ -143,7 +116,8 @@ function App() {
           else wrong++;
       });
       const score = Math.round((correct / quizQuestions.length) * 100);
-      const passed = score >= 80;
+      // A timeout always counts as "nicht bestanden", regardless of the score reached so far.
+      const passed = timedOut ? false : score >= 80;
 
       const record: QuizResultRecord = {
         first_name: userDetails.firstName,
@@ -333,25 +307,6 @@ function App() {
                       </svg>
                     ) : 'Quiz starten'}
                   </button>
-
-                  {/* DEV ONLY: Simulate passed/failed exam to preview the result screen & certificate. Remove after testing. */}
-                  <div className="mt-4 pt-4 border-t border-dashed border-gray-200">
-                    <p className="text-center text-[10px] font-bold uppercase tracking-wide text-gray-300 mb-2">Dev-Test: Zertifikat-Vorschau</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => simulateQuizResult(true)}
-                        className="flex-1 py-2 rounded-xl border-2 border-dashed border-green-300 text-green-600 text-xs font-bold hover:bg-green-50 transition-all"
-                      >
-                        🧪 Bestanden simulieren
-                      </button>
-                      <button
-                        onClick={() => simulateQuizResult(false)}
-                        className="flex-1 py-2 rounded-xl border-2 border-dashed border-red-300 text-red-500 text-xs font-bold hover:bg-red-50 transition-all"
-                      >
-                        🧪 Nicht bestanden simulieren
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -481,6 +436,7 @@ function App() {
             userDetails={userDetails}
             category={quizConfig.category}
             questionCount={quizConfig.count}
+            timedOut={quizTimedOut}
           />
         );
 
