@@ -34,72 +34,55 @@ export interface QuizResultRecord {
 }
 
 export type CertificateFontFamily = 'times' | 'helvetica' | 'courier';
+export type CertificateElementVisibility = 'all' | 'trainer' | 'koala';
+export type CertificateTextAlign = 'left' | 'center' | 'right';
 
-export interface ElementPosition {
-  x: number; // mm from left edge of the page
-  y: number; // mm from top edge of the page
+export interface CertificateTextElement {
+  id: string;
+  label: string; // internal name shown in the editor, e.g. "Titel"
+  text: string; // supports placeholders: {name} {datum} {ergebnis} {hundename} {chipnummer} {ort}
+  x: number; // mm from left
+  y: number; // mm from top
+  fontSize: number;
+  color: string; // hex
+  fontFamily: CertificateFontFamily;
+  bold?: boolean;
+  italic?: boolean;
+  align: CertificateTextAlign;
+  vertical?: boolean; // rotated 90°, for sidebar watermark-style text
+  maxWidthMm?: number; // if set, text wraps to this width
+  visibility: CertificateElementVisibility;
 }
 
-export type CertificateElementKey =
-  | 'watermark'
-  | 'title'
-  | 'name'
-  | 'intro'
-  | 'heading1'
-  | 'heading2'
-  | 'legalOrParticipation'
-  | 'result'
-  | 'passed'
-  | 'dogLine'
-  | 'signatureDate'
-  | 'signatureLabel'
-  | 'veranstalterLabel'
-  | 'footer';
+export type CertificateImageAsset =
+  | 'shield'
+  | 'signature'
+  | 'hundeschuleLogo'
+  | 'businessCardStamp'
+  | 'euBadge'
+  | 'eurozertSeal'
+  | 'koalaSeal';
 
-export type CertificatePositions = Record<CertificateElementKey, ElementPosition>;
+export interface CertificateImageElement {
+  id: string;
+  label: string;
+  asset: CertificateImageAsset;
+  x: number; // mm, top-left of bounding box
+  y: number;
+  width: number; // mm
+  height: number; // mm
+  visibility: CertificateElementVisibility;
+}
 
 export interface CertificateSettings {
-  // Farben (Hex)
   sidebarColor: string;
-  titleColor: string;
-  nameColor: string;
-  bodyColor: string;
-  footerColor: string;
-  watermarkColor: string;
-
-  // Schrift
-  fontFamily: CertificateFontFamily;
-  titleFontSize: number;
-  nameFontSize: number;
-  headingFontSize: number;
-  bodyFontSize: number;
-  footerFontSize: number;
-  watermarkFontSize: number;
-
-  // Layout
   sidebarWidthMm: number;
-  sealSizeMm: number;
-  showWatermarkText: boolean;
-
-  // Freie Positionierung der Textfelder (mm, per Drag & Drop im Editor gesetzt)
-  positions: CertificatePositions;
-
-  // Texte (Platzhalter: {name} {datum} {ergebnis} {hundename} {chipnummer})
-  watermarkText: string;
-  titleText: string;
-  introText: string;
-  headingLine1: string;
-  headingLine2Trainer: string;
-  headingLine2Koala: string;
-  legalLineTrainer: string;
-  participationLineKoala: string;
-  resultLine: string;
-  passedLine: string;
-  dogLineTemplate: string;
   locationDefault: string;
-  signatureLabel: string;
-  veranstalterLabel: string;
-  footerText: string;
+  gridSizeMm: number;
+  snapToGrid: boolean;
+  showGrid: boolean;
+  textElements: CertificateTextElement[];
+  imageElements: CertificateImageElement[];
 }
 
 export interface CertificateSettingsRecord {

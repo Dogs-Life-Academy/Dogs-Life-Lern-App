@@ -1,86 +1,92 @@
 import { jsPDF } from 'jspdf';
-import { CertificateSettings, CertificatePositions, CertificateFontFamily } from '../types.ts';
+import {
+  CertificateSettings,
+  CertificateTextElement,
+  CertificateImageElement,
+  CertificateImageAsset,
+  CertificateFontFamily,
+  CertificateElementVisibility,
+} from '../types.ts';
 
 const ASSET_BASE = '/assets/certificates';
 
-const ASSET_PATHS = {
+const ASSET_PATHS: Record<CertificateImageAsset, string> = {
   shield: `${ASSET_BASE}/dogs-life-shield.png`,
-  hundeschuleLogo: `${ASSET_BASE}/hundeschule-bw-logo.png`,
   signature: `${ASSET_BASE}/signature-huber.png`,
-  stamp: `${ASSET_BASE}/stamp-huber.png`,
+  hundeschuleLogo: `${ASSET_BASE}/hundeschule-bw-logo.png`,
+  businessCardStamp: `${ASSET_BASE}/business-card-stamp.png`,
   euBadge: `${ASSET_BASE}/eu-qualified-badge.png`,
   eurozertSeal: `${ASSET_BASE}/eurozert-seal.png`,
   koalaSeal: `${ASSET_BASE}/koala-pruefer-seal.png`,
 };
 
-// Default positions match the original fixed layout (mm, from top-left of an A4 page).
-export const DEFAULT_POSITIONS: CertificatePositions = {
-  watermark: { x: 16, y: 150 },
-  title: { x: 46, y: 40 },
-  name: { x: 46, y: 58 },
-  intro: { x: 46, y: 78 },
-  heading1: { x: 46, y: 92 },
-  heading2: { x: 46, y: 103 },
-  legalOrParticipation: { x: 46, y: 119 },
-  result: { x: 46, y: 131 },
-  passed: { x: 46, y: 143 },
-  dogLine: { x: 46, y: 157 },
-  signatureDate: { x: 46, y: 228 },
-  signatureLabel: { x: 46, y: 251 },
-  veranstalterLabel: { x: 86, y: 251 },
-  footer: { x: 46, y: 289 },
+export const IMAGE_ASSET_LABELS: Record<CertificateImageAsset, string> = {
+  shield: 'Dog\u00B4s Life Academy Wappen',
+  signature: 'Unterschrift',
+  hundeschuleLogo: 'Hundeschule Bayerischer Wald (Logo)',
+  businessCardStamp: 'Stempel (mit Kontaktdaten)',
+  euBadge: 'EU Qualified Experts Siegel',
+  eurozertSeal: 'Euro-Zert Siegel',
+  koalaSeal: 'KoAla-Prüfer Siegel',
 };
+
+function uid(): string {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+function textEl(partial: Omit<CertificateTextElement, 'id'>): CertificateTextElement {
+  return { id: uid(), ...partial };
+}
+
+function imgEl(partial: Omit<CertificateImageElement, 'id'>): CertificateImageElement {
+  return { id: uid(), ...partial };
+}
 
 export const DEFAULT_CERTIFICATE_SETTINGS: CertificateSettings = {
   sidebarColor: '#909D8C',
-  titleColor: '#373737',
-  nameColor: '#646464',
-  bodyColor: '#373737',
-  footerColor: '#969696',
-  watermarkColor: '#FFFFFF',
-
-  fontFamily: 'times',
-  titleFontSize: 40,
-  nameFontSize: 22,
-  headingFontSize: 24,
-  bodyFontSize: 11,
-  footerFontSize: 7.5,
-  watermarkFontSize: 13,
-
   sidebarWidthMm: 32,
-  sealSizeMm: 20,
-  showWatermarkText: true,
-
-  positions: DEFAULT_POSITIONS,
-
-  watermarkText: 'Hundezentrum Bayerischer Wald',
-  titleText: 'Zertifikat',
-  introText: 'hat am {datum} an der',
-  headingLine1: 'Theorie-Prüfung',
-  headingLine2Trainer: 'zum/zur Hundetrainer/in',
-  headingLine2Koala: 'des KoAla-Test\u00AE',
-  legalLineTrainer: 'angelehnt an §11 Abs. 1 Satz 1 Nummer 8 Buchstabe f TierSchG teilgenommen',
-  participationLineKoala: 'teilgenommen',
-  resultLine: 'und die Prüfung mit einem Ergebnis von {ergebnis}% am {datum}',
-  passedLine: 'erfolgreich abgelegt und bestanden.',
-  dogLineTemplate: 'in Begleitung von Hund {hundename} (Chip-Nr. {chipnummer})',
   locationDefault: 'Ascha',
-  signatureLabel: 'Sachverständiger | Christian Huber',
-  veranstalterLabel: 'Veranstalter | Hundeschule Bayerischer Wald',
-  footerText:
-    "Dog\u00B4s Life Academy - www.dogs-life-academy.com  |  Hundeschule Bayerischer Wald - www.hs-bw.com  |  Hundezentrum Bayerischer Wald - www.hundezentrum-bayerischer-wald.de",
+  gridSizeMm: 5,
+  snapToGrid: true,
+  showGrid: true,
+
+  textElements: [
+    textEl({ label: 'Wasserzeichen', text: 'Dog\u00B4s Life Academy', x: 16, y: 150, fontSize: 13, color: '#FFFFFF', fontFamily: 'times', align: 'center', vertical: true, visibility: 'all' }),
+    textEl({ label: 'Titel', text: 'Zertifikat', x: 46, y: 40, fontSize: 40, color: '#373737', fontFamily: 'times', align: 'left', visibility: 'all' }),
+    textEl({ label: 'Name', text: '{name}', x: 46, y: 58, fontSize: 22, color: '#646464', fontFamily: 'times', align: 'left', visibility: 'all' }),
+    textEl({ label: 'Einleitung', text: 'hat am {datum} an der', x: 46, y: 78, fontSize: 11, color: '#373737', fontFamily: 'helvetica', align: 'left', visibility: 'all' }),
+    textEl({ label: 'Überschrift Zeile 1', text: 'Theorie-Prüfung', x: 46, y: 92, fontSize: 24, color: '#373737', fontFamily: 'times', align: 'left', visibility: 'all' }),
+    textEl({ label: 'Überschrift Zeile 2 (Trainer)', text: 'zum/zur Hundetrainer/in', x: 46, y: 103, fontSize: 24, color: '#373737', fontFamily: 'times', align: 'left', visibility: 'trainer' }),
+    textEl({ label: 'Überschrift Zeile 2 (KoAla)', text: 'des KoAla-Test\u00AE', x: 46, y: 103, fontSize: 24, color: '#373737', fontFamily: 'times', align: 'left', visibility: 'koala' }),
+    textEl({ label: 'Rechtstext (Trainer)', text: 'angelehnt an §11 Abs. 1 Satz 1 Nummer 8 Buchstabe f TierSchG teilgenommen', x: 46, y: 119, fontSize: 11, color: '#373737', fontFamily: 'helvetica', align: 'left', maxWidthMm: 146, visibility: 'trainer' }),
+    textEl({ label: 'Teilnahmetext (KoAla)', text: 'teilgenommen', x: 46, y: 119, fontSize: 11, color: '#373737', fontFamily: 'helvetica', align: 'left', visibility: 'koala' }),
+    textEl({ label: 'Ergebnis', text: 'und die Prüfung mit einem Ergebnis von {ergebnis}% am {datum}', x: 46, y: 131, fontSize: 11, color: '#373737', fontFamily: 'helvetica', align: 'left', maxWidthMm: 146, visibility: 'all' }),
+    textEl({ label: 'Bestanden', text: 'erfolgreich abgelegt und bestanden.', x: 46, y: 143, fontSize: 11, color: '#373737', fontFamily: 'helvetica', align: 'left', visibility: 'all' }),
+    textEl({ label: 'Hunde-Zeile', text: 'in Begleitung von Hund {hundename} (Chip-Nr. {chipnummer})', x: 46, y: 157, fontSize: 10.5, color: '#373737', fontFamily: 'helvetica', italic: true, align: 'left', visibility: 'koala' }),
+    textEl({ label: 'Ort & Datum', text: '{ort}, den {datum}', x: 46, y: 228, fontSize: 11, color: '#373737', fontFamily: 'helvetica', align: 'left', visibility: 'all' }),
+    textEl({ label: 'Signatur-Label', text: 'Sachverständiger | Christian Huber', x: 46, y: 251, fontSize: 8.5, color: '#969696', fontFamily: 'helvetica', align: 'left', visibility: 'all' }),
+    textEl({ label: 'Veranstalter-Label', text: 'Veranstalter | Hundeschule Bayerischer Wald', x: 86, y: 251, fontSize: 8.5, color: '#969696', fontFamily: 'helvetica', align: 'left', visibility: 'all' }),
+    textEl({ label: 'Fußzeile', text: "Dog\u00B4s Life Academy - www.dogs-life-academy.com  |  Hundeschule Bayerischer Wald - www.hs-bw.com  |  Hundezentrum Bayerischer Wald - www.hundezentrum-bayerischer-wald.de", x: 46, y: 289, fontSize: 7.5, color: '#969696', fontFamily: 'helvetica', align: 'left', maxWidthMm: 150, visibility: 'all' }),
+  ],
+
+  imageElements: [
+    imgEl({ label: 'Wappen (Seitenstreifen)', asset: 'shield', x: 7, y: 12, width: 18, height: 18, visibility: 'all' }),
+    imgEl({ label: 'Unterschrift', asset: 'signature', x: 46, y: 232, width: 34, height: 14, visibility: 'all' }),
+    imgEl({ label: 'Stempel', asset: 'businessCardStamp', x: 84, y: 227, width: 62, height: 24, visibility: 'all' }),
+    imgEl({ label: 'EU-Siegel', asset: 'euBadge', x: 172, y: 255, width: 20, height: 20, visibility: 'all' }),
+    imgEl({ label: 'Euro-Zert Siegel', asset: 'eurozertSeal', x: 148, y: 255, width: 20, height: 20, visibility: 'trainer' }),
+    imgEl({ label: 'KoAla-Prüfer Siegel', asset: 'koalaSeal', x: 148, y: 255, width: 20, height: 20, visibility: 'koala' }),
+  ],
 };
 
-// Merges a partial/stored settings object with the defaults, deep-merging the `positions` map
-// so older saved settings (without every key) never end up with missing coordinates.
 export function mergeCertificateSettings(override?: Partial<CertificateSettings> | null): CertificateSettings {
+  if (!override || !Array.isArray(override.textElements) || !Array.isArray(override.imageElements)) {
+    // Old/incompatible or missing settings: fall back to the current defaults.
+    return { ...DEFAULT_CERTIFICATE_SETTINGS };
+  }
   return {
     ...DEFAULT_CERTIFICATE_SETTINGS,
-    ...(override || {}),
-    positions: {
-      ...DEFAULT_POSITIONS,
-      ...((override && override.positions) || {}),
-    },
+    ...override,
   };
 }
 
@@ -90,7 +96,6 @@ interface LoadedImage {
   height: number;
 }
 
-// Cache loaded (fetched) images across multiple certificate generations in the same session.
 const imageCache: Record<string, Promise<LoadedImage>> = {};
 
 function loadImage(src: string): Promise<LoadedImage> {
@@ -123,21 +128,17 @@ function loadImage(src: string): Promise<LoadedImage> {
 
 function fontFamilyToCss(family: CertificateFontFamily): string {
   switch (family) {
-    case 'times':
-      return '"Times New Roman", Times, serif';
-    case 'courier':
-      return '"Courier New", Courier, monospace';
-    default:
-      return 'Helvetica, Arial, sans-serif';
+    case 'times': return '"Times New Roman", Times, serif';
+    case 'courier': return '"Courier New", Courier, monospace';
+    default: return 'Helvetica, Arial, sans-serif';
   }
 }
 
-// Renders text rotated 90° into a canvas and returns it as an image — far more reliable
-// than jsPDF's native rotated-text option, which frequently fails to render at all when
-// combined with center alignment.
+// Renders text rotated 90° into a canvas image. Far more reliable than jsPDF's native
+// rotated-text option, which frequently fails to render at all when combined with alignment.
 function renderVerticalTextImage(text: string, colorHex: string, fontSizePt: number, family: CertificateFontFamily): LoadedImage {
   const cssFont = fontFamilyToCss(family);
-  const scale = 4; // supersample for a crisp result once embedded into the PDF
+  const scale = 4;
   const fontPx = Math.max(fontSizePt * 1.333 * scale, 1);
 
   const measure = document.createElement('canvas').getContext('2d')!;
@@ -163,26 +164,16 @@ function renderVerticalTextImage(text: string, colorHex: string, fontSizePt: num
   return { dataUrl: canvas.toDataURL('image/png'), width, height };
 }
 
-function addImageFitted(
-  doc: jsPDF,
-  img: LoadedImage,
-  x: number,
-  y: number,
-  maxW: number,
-  maxH: number,
-  hAlign: 'left' | 'center' | 'right' = 'left',
-  vAlign: 'top' | 'center' = 'top'
-): { w: number; h: number } {
-  const ratio = Math.min(maxW / img.width, maxH / img.height);
+// Fits an image (preserving aspect ratio) centered inside a given mm box.
+// A unique `alias` is passed for dynamically generated (non-cached) images so jsPDF's
+// internal image cache never mistakes new pixel content for a previously seen image.
+function drawImageInBox(doc: jsPDF, img: LoadedImage, boxX: number, boxY: number, boxW: number, boxH: number, alias?: string) {
+  const ratio = Math.min(boxW / img.width, boxH / img.height);
   const w = img.width * ratio;
   const h = img.height * ratio;
-  let drawX = x;
-  if (hAlign === 'center') drawX = x - w / 2;
-  if (hAlign === 'right') drawX = x - w;
-  let drawY = y;
-  if (vAlign === 'center') drawY = y - h / 2;
-  doc.addImage(img.dataUrl, 'PNG', drawX, drawY, w, h);
-  return { w, h };
+  const drawX = boxX + (boxW - w) / 2;
+  const drawY = boxY + (boxH - h) / 2;
+  doc.addImage(img.dataUrl, 'PNG', drawX, drawY, w, h, alias, undefined, 0);
 }
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -199,6 +190,18 @@ function fillPlaceholders(template: string, vars: Record<string, string>): strin
     result = result.split(`{${key}}`).join(value);
   });
   return result;
+}
+
+function matchesVisibility(vis: CertificateElementVisibility, isTrainer: boolean): boolean {
+  if (vis === 'all') return true;
+  return isTrainer ? vis === 'trainer' : vis === 'koala';
+}
+
+function fontStyle(el: { bold?: boolean; italic?: boolean }): string {
+  if (el.bold && el.italic) return 'bolditalic';
+  if (el.bold) return 'bold';
+  if (el.italic) return 'italic';
+  return 'normal';
 }
 
 export interface CertificateData {
@@ -221,24 +224,15 @@ export async function buildCertificatePdf(
   settingsOverride?: Partial<CertificateSettings> | null
 ): Promise<jsPDF> {
   const settings = mergeCertificateSettings(settingsOverride);
-  const pos = settings.positions;
   const isTrainer = data.category === 'Trainerprüfung';
 
-  const [shield, hundeschuleLogo, signature, stamp, euBadge, eurozertSeal, koalaSeal] = await Promise.all([
-    loadImage(ASSET_PATHS.shield),
-    loadImage(ASSET_PATHS.hundeschuleLogo),
-    loadImage(ASSET_PATHS.signature),
-    loadImage(ASSET_PATHS.stamp),
-    loadImage(ASSET_PATHS.euBadge),
-    loadImage(ASSET_PATHS.eurozertSeal),
-    loadImage(ASSET_PATHS.koalaSeal),
-  ]);
+  const neededAssets = Array.from(new Set(settings.imageElements.map(el => el.asset)));
+  const loadedPairs = await Promise.all(neededAssets.map(async asset => [asset, await loadImage(ASSET_PATHS[asset])] as const));
+  const loadedImages: Partial<Record<CertificateImageAsset, LoadedImage>> = {};
+  loadedPairs.forEach(([asset, img]) => { loadedImages[asset] = img; });
 
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-  const pageW = 210;
   const pageH = 297;
-  const sidebarW = settings.sidebarWidthMm;
-  const rightMargin = 18;
 
   const date = data.certifiedAt ? new Date(data.certifiedAt) : new Date();
   const dateStr = formatDateDE(date);
@@ -250,93 +244,46 @@ export async function buildCertificatePdf(
     ergebnis: String(data.scorePercentage),
     hundename: data.dogName || '',
     chipnummer: data.chipNumber || '',
+    ort: location,
   };
 
-  // --- Sidebar ---
+  // --- Sidebar background ---
   doc.setFillColor(...hexToRgb(settings.sidebarColor));
-  doc.rect(0, 0, sidebarW, pageH, 'F');
-  addImageFitted(doc, shield, sidebarW / 2, 12, 18, 18, 'center');
+  doc.rect(0, 0, settings.sidebarWidthMm, pageH, 'F');
 
-  if (settings.showWatermarkText && settings.watermarkText) {
-    const wmImg = renderVerticalTextImage(settings.watermarkText, settings.watermarkColor, settings.watermarkFontSize, settings.fontFamily);
-    addImageFitted(doc, wmImg, pos.watermark.x, pos.watermark.y, Math.max(sidebarW - 6, 4), pageH - 40, 'center', 'center');
+  // --- Image elements ---
+  for (const el of settings.imageElements) {
+    if (!matchesVisibility(el.visibility, isTrainer)) continue;
+    const img = loadedImages[el.asset];
+    if (!img) continue;
+    drawImageInBox(doc, img, el.x, el.y, el.width, el.height);
   }
 
-  // --- Title ---
-  doc.setTextColor(...hexToRgb(settings.titleColor));
-  doc.setFont(settings.fontFamily, 'normal');
-  doc.setFontSize(settings.titleFontSize);
-  doc.text(settings.titleText, pos.title.x, pos.title.y);
+  // --- Text elements ---
+  for (const el of settings.textElements) {
+    if (!matchesVisibility(el.visibility, isTrainer)) continue;
+    const content = fillPlaceholders(el.text, vars);
+    if (!content) continue;
 
-  // --- Name ---
-  doc.setFontSize(settings.nameFontSize);
-  doc.setTextColor(...hexToRgb(settings.nameColor));
-  doc.text(vars.name, pos.name.x, pos.name.y);
+    if (el.vertical) {
+      const img = renderVerticalTextImage(content, el.color, el.fontSize, el.fontFamily);
+      const boxW = el.maxWidthMm || Math.max(settings.sidebarWidthMm - 6, 4);
+      const boxH = 200;
+      drawImageInBox(doc, img, el.x - boxW / 2, el.y - boxH / 2, boxW, boxH, `wm-${el.id}-${content.length}-${el.fontSize}`);
+      continue;
+    }
 
-  // --- Intro line ---
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(settings.bodyFontSize);
-  doc.setTextColor(...hexToRgb(settings.bodyColor));
-  doc.text(fillPlaceholders(settings.introText, vars), pos.intro.x, pos.intro.y);
+    doc.setFont(el.fontFamily, fontStyle(el));
+    doc.setFontSize(el.fontSize);
+    doc.setTextColor(...hexToRgb(el.color));
 
-  // --- Category heading ---
-  doc.setFont(settings.fontFamily, 'normal');
-  doc.setFontSize(settings.headingFontSize);
-  doc.text(settings.headingLine1, pos.heading1.x, pos.heading1.y);
-  doc.text(isTrainer ? settings.headingLine2Trainer : settings.headingLine2Koala, pos.heading2.x, pos.heading2.y);
-
-  // --- Legal / participation line ---
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(settings.bodyFontSize);
-  doc.setTextColor(...hexToRgb(settings.bodyColor));
-  const legalWrapW = pageW - rightMargin - pos.legalOrParticipation.x;
-  if (isTrainer) {
-    doc.text(doc.splitTextToSize(settings.legalLineTrainer, legalWrapW), pos.legalOrParticipation.x, pos.legalOrParticipation.y);
-  } else {
-    doc.text(settings.participationLineKoala, pos.legalOrParticipation.x, pos.legalOrParticipation.y);
+    if (el.maxWidthMm) {
+      const lines = doc.splitTextToSize(content, el.maxWidthMm);
+      doc.text(lines, el.x, el.y, { align: el.align });
+    } else {
+      doc.text(content, el.x, el.y, { align: el.align });
+    }
   }
-
-  // --- Result & passed lines ---
-  const resultWrapW = pageW - rightMargin - pos.result.x;
-  doc.text(doc.splitTextToSize(fillPlaceholders(settings.resultLine, vars), resultWrapW), pos.result.x, pos.result.y);
-  doc.text(settings.passedLine, pos.passed.x, pos.passed.y);
-
-  // --- Dog line (Hundeführerschein only) ---
-  if (!isTrainer && data.dogName) {
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(Math.max(settings.bodyFontSize - 0.5, 6));
-    doc.setTextColor(...hexToRgb(settings.bodyColor));
-    doc.text(fillPlaceholders(settings.dogLineTemplate, vars), pos.dogLine.x, pos.dogLine.y);
-  }
-
-  // --- Signature block ---
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(settings.bodyFontSize);
-  doc.setTextColor(...hexToRgb(settings.bodyColor));
-  doc.text(`${location}, den ${dateStr}`, pos.signatureDate.x, pos.signatureDate.y);
-
-  addImageFitted(doc, signature, pos.signatureDate.x, pos.signatureDate.y + 4, 34, 14, 'left');
-  addImageFitted(doc, stamp, pos.signatureDate.x + 40, pos.signatureDate.y + 1, 28, 18, 'left');
-  addImageFitted(doc, hundeschuleLogo, pos.signatureDate.x + 76, pos.signatureDate.y + 1, 20, 20, 'left');
-
-  doc.setFontSize(8.5);
-  doc.setTextColor(...hexToRgb(settings.footerColor));
-  doc.text(settings.signatureLabel, pos.signatureLabel.x, pos.signatureLabel.y);
-  doc.text(settings.veranstalterLabel, pos.veranstalterLabel.x, pos.veranstalterLabel.y);
-
-  // --- Seals bottom-right ---
-  const sealSize = settings.sealSizeMm;
-  const sealY = pageH - sealSize - 22;
-  const sealRightX = pageW - rightMargin;
-  addImageFitted(doc, euBadge, sealRightX, sealY, sealSize, sealSize, 'right');
-  const secondSeal = isTrainer ? eurozertSeal : koalaSeal;
-  addImageFitted(doc, secondSeal, sealRightX - sealSize - 4, sealY, sealSize, sealSize, 'right');
-
-  // --- Footer ---
-  doc.setFontSize(settings.footerFontSize);
-  doc.setTextColor(...hexToRgb(settings.footerColor));
-  const footerWrapW = pageW - rightMargin - sidebarW - 4;
-  doc.text(doc.splitTextToSize(settings.footerText, footerWrapW), pos.footer.x, pos.footer.y);
 
   return doc;
 }
