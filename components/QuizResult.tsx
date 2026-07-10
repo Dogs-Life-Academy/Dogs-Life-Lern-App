@@ -74,8 +74,8 @@ const QuizResult: React.FC<QuizResultProps> = ({ questions, userAnswers, onResta
         
         {/* 1. Header Area (Score) - Fixed */}
         <div className="flex-none bg-[#1e1f26] p-4 pb-0 z-10 w-full max-w-md mx-auto">
-             <div className="rounded-2xl overflow-hidden shadow-lg mb-3 h-36">
-                <img src={resultImage} alt="" className="w-full h-full object-cover" />
+             <div className="rounded-2xl overflow-hidden shadow-lg mb-3 bg-white">
+                <img src={resultImage} alt="" className="w-full h-auto max-h-64 object-contain mx-auto" />
              </div>
              <div className="bg-white rounded-2xl p-4 text-center shadow-lg relative overflow-hidden mb-4">
                  <div className={`absolute top-0 left-0 w-full h-20 ${passed ? 'bg-[#2ecc71]' : 'bg-[#e17055]'} opacity-20`}></div>
