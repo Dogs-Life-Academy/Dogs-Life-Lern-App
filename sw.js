@@ -1,10 +1,15 @@
-const CACHE_NAME = 'dogs-life-v1';
+const CACHE_NAME = 'dogs-life-v2';
 // Only cache the main entry point and manifest. 
 // Removed .tsx files from cache list as they cause 404 errors in some environments.
 const urlsToCache = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon.png',
+  './icons/favicon-32.png'
 ];
 
 // Install SW
