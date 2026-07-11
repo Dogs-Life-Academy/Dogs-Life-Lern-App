@@ -2,6 +2,7 @@
   "name": "Dog´s Life Academy",
   "short_name": "Dog´s Life",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#6C5CE7",
   "theme_color": "#6C5CE7",
@@ -25,6 +26,5 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ],
-  "scope": "/"
+  ]
 }
