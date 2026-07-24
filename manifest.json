@@ -1,6 +1,7 @@
+
 {
-  "name": "Dog´s Life Academy",
-  "short_name": "Dog´s Life",
+  "name": "Canicanum",
+  "short_name": "Canicanum",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#6C5CE7",
@@ -8,22 +9,14 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "./icons/icon-192.png",
+      "src": "/assets/canicanum-logo.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
-      "src": "./icons/icon-512.png",
+      "src": "/assets/canicanum-logo.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./icons/icon-maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/png"
     }
   ]
 }

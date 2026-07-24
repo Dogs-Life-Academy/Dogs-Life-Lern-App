@@ -11,7 +11,7 @@ import {
 const ASSET_BASE = '/assets/certificates';
 
 const ASSET_PATHS: Record<CertificateImageAsset, string> = {
-  shield: `${ASSET_BASE}/dogs-life-shield.png`,
+  shield: `/assets/canicanum-logo.png`,
   signature: `${ASSET_BASE}/signature-huber.png`,
   hundeschuleLogo: `${ASSET_BASE}/hundeschule-bw-logo.png`,
   businessCardStamp: `${ASSET_BASE}/business-card-stamp.png`,
@@ -21,7 +21,7 @@ const ASSET_PATHS: Record<CertificateImageAsset, string> = {
 };
 
 export const IMAGE_ASSET_LABELS: Record<CertificateImageAsset, string> = {
-  shield: 'Dog\u00B4s Life Academy Wappen',
+  shield: 'Canicanum Logo',
   signature: 'Unterschrift',
   hundeschuleLogo: 'Hundeschule Bayerischer Wald (Logo)',
   businessCardStamp: 'Stempel (mit Kontaktdaten)',
@@ -51,7 +51,7 @@ export const DEFAULT_CERTIFICATE_SETTINGS: CertificateSettings = {
   showGrid: true,
 
   textElements: [
-    textEl({ label: 'Wasserzeichen', text: 'Dog\u00B4s Life Academy', x: 16, y: 150, fontSize: 13, color: '#FFFFFF', fontFamily: 'times', align: 'center', vertical: true, visibility: 'all' }),
+    textEl({ label: 'Wasserzeichen', text: 'Canicanum', x: 16, y: 150, fontSize: 13, color: '#FFFFFF', fontFamily: 'times', align: 'center', vertical: true, visibility: 'all' }),
     textEl({ label: 'Titel', text: 'Zertifikat', x: 46, y: 40, fontSize: 40, color: '#373737', fontFamily: 'times', align: 'left', visibility: 'all' }),
     textEl({ label: 'Name', text: '{name}', x: 46, y: 58, fontSize: 22, color: '#646464', fontFamily: 'times', align: 'left', visibility: 'all' }),
     textEl({ label: 'Einleitung', text: 'hat am {datum} an der', x: 46, y: 78, fontSize: 11, color: '#373737', fontFamily: 'helvetica', align: 'left', visibility: 'all' }),
@@ -66,7 +66,7 @@ export const DEFAULT_CERTIFICATE_SETTINGS: CertificateSettings = {
     textEl({ label: 'Ort & Datum', text: '{ort}, den {datum}', x: 46, y: 228, fontSize: 11, color: '#373737', fontFamily: 'helvetica', align: 'left', visibility: 'all' }),
     textEl({ label: 'Signatur-Label', text: 'Sachverständiger | Christian Huber', x: 46, y: 251, fontSize: 8.5, color: '#969696', fontFamily: 'helvetica', align: 'left', visibility: 'all' }),
     textEl({ label: 'Veranstalter-Label', text: 'Veranstalter | Hundeschule Bayerischer Wald', x: 86, y: 251, fontSize: 8.5, color: '#969696', fontFamily: 'helvetica', align: 'left', visibility: 'all' }),
-    textEl({ label: 'Fußzeile', text: "Dog\u00B4s Life Academy - www.dogs-life-academy.com  |  Hundeschule Bayerischer Wald - www.hs-bw.com  |  Hundezentrum Bayerischer Wald - www.hundezentrum-bayerischer-wald.de", x: 46, y: 289, fontSize: 7.5, color: '#969696', fontFamily: 'helvetica', align: 'left', maxWidthMm: 150, visibility: 'all' }),
+    textEl({ label: 'Fußzeile', text: "Canicanum - www.canicanum.de  |  Hundeschule Bayerischer Wald - www.hs-bw.com  |  Hundezentrum Bayerischer Wald - www.hundezentrum-bayerischer-wald.de", x: 46, y: 289, fontSize: 7.5, color: '#969696', fontFamily: 'helvetica', align: 'left', maxWidthMm: 150, visibility: 'all' }),
   ],
 
   imageElements: [

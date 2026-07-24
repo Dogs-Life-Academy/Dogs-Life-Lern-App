@@ -153,8 +153,8 @@ function App() {
             <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center relative z-10">
               <div className="mb-8 flex justify-center">
                 <img 
-                  src="https://webapp.canicanum.de/file/372" 
-                  alt="Canicanum Dienstleistungs- und Beratungsservice" 
+                  src="/assets/canicanum-logo.png" 
+                  alt="Canicanum" 
                   className="w-48 h-auto object-contain min-h-[60px]"
                 />
               </div>

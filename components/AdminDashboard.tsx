@@ -150,7 +150,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBack }) => {
     // Title
     doc.setFontSize(18);
     const titleSuffix = exportCategory ? ` (${exportCategory})` : '';
-    doc.text(`Dog´s Life Academy - Fragenkatalog${titleSuffix}`, margin, yPos);
+    doc.text(`Canicanum - Fragenkatalog${titleSuffix}`, margin, yPos);
     yPos += 10;
     
     doc.setFontSize(10);

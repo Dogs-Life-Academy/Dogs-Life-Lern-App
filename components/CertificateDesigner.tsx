@@ -19,7 +19,7 @@ import { fetchCertificateSettings, saveCertificateSettings } from '../services/s
 type PreviewCategory = 'Hundeführerschein' | 'Trainerprüfung';
 
 const ASSET_PUBLIC_PATHS: Record<CertificateImageAsset, string> = {
-  shield: '/assets/certificates/dogs-life-shield.png',
+  shield: '/assets/canicanum-logo.png',
   signature: '/assets/certificates/signature-huber.png',
   hundeschuleLogo: '/assets/certificates/hundeschule-bw-logo.png',
   businessCardStamp: '/assets/certificates/business-card-stamp.png',
