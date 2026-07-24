@@ -153,13 +153,13 @@ function App() {
             <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center relative z-10">
               <div className="mb-8 flex justify-center">
                 <img 
-                  src="https://trainer.hs-bw.com/wp-content/uploads/2023/02/Logo-Dogs-Life-ohne-Hintergrund.png" 
-                  alt="Dog´s Life Academy" 
+                  src="https://webapp.canicanum.de/file/372" 
+                  alt="Canicanum Dienstleistungs- und Beratungsservice" 
                   className="w-48 h-auto object-contain min-h-[60px]"
                 />
               </div>
               
-              <h1 className="text-2xl font-extrabold text-gray-800 mb-2">Dog´s Life Academy</h1>
+              <h1 className="text-2xl font-extrabold text-gray-800 mb-2">Canicanum</h1>
               <h2 className="text-xl font-bold text-gray-700 mb-8">Theorie Test Prüfungen</h2>
               <p className="text-gray-500 mb-6 text-sm">Wähle eine Option, um zu starten.</p>
               
